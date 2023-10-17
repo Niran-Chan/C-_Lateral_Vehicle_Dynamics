@@ -25,7 +25,7 @@ public:
     double m   = ego.param[:m] //Mass
     double Iz  = ego.param[:Iz] //Mass Moment of Inertia About Z Axis
      */
-    std::vector<double> vel {0,0,0}; //Velocity
+    double v = 10; //Velocity
     double slipAngle  = 1; //Slip Angle
     double yawRate   = 1;//Yaw Rate
     double steeringAngle  = 1; //Steering Angle
@@ -33,7 +33,7 @@ public:
     double Cαr = 1;
     double lf  = 1;
     double lr  = 1;
-    double m   = 1; //Mass
+    double m   = 1000; //Mass in kg
     double Iz  = 1;//Mass Moment of Inertia About Z Axis
     double yaw = 1;
     double speed = 3;

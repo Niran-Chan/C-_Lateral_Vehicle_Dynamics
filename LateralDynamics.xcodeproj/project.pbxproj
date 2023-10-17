@@ -253,7 +253,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 36A4G32N68;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/headmyshoulder-odeint-v2-db8b39a/include/boost/numeric/**";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/headmyshoulder-odeint-v2-db8b39a/include/boost/numeric/**";
 			};
 			name = Debug;
 		};
@@ -263,7 +265,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 36A4G32N68;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/headmyshoulder-odeint-v2-db8b39a/include/boost/numeric/**";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/headmyshoulder-odeint-v2-db8b39a/include/boost/numeric/**";
 			};
 			name = Release;
 		};

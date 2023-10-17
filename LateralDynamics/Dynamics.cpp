@@ -9,37 +9,19 @@
 #include "Dynamics.hpp"
 #include "Vehicle.hpp"
 #include <iostream>
-#include <odeint>
+//#include "odeint.hpp" //ODE Library
+
 
 std::vector<double> Dynamics::bicycle_kinematics(double lf,double lr,double v, double ψ, double δf){
-    std::cout << "Bicycle Kinematics Function" << std::endl;
+    //std::cout << "Bicycle Kinematics Function" << std::endl;
     double L = lf + lr;
-    double β = atan(lr * tan(δf) / L);
-    double dX = v * cos(ψ + β);
-    double dY = v * sin(ψ + β);
-    double dψ = v * cos(β) * tan(δf) / L;
-    std::vector<double> vars {dX, dY, dψ, β};
+    double β = atan(lr * tan(δf) / L); //Slip Angle
+    double dX = v * cos(ψ + β); //Change in X Direction
+    double dY = v * sin(ψ + β); //Change in Y Direction
+    double dψ = v * cos(β) * tan(δf) / L; //Change in Steering Rate
+    double dθ = v * sin(δf)/L; //Change in Heading Angle
+    std::vector<double> vars {dX, dY, dψ,dθ,β};
     return vars;
-}
-std::vector <double> Dynamics::bicycle_kinematics_forward(Vehicle* car){
-    double L = car -> lf + car -> lr;
-    double β = atan(car -> lr * tan(car -> steeringAngle) / L);
-    double dX = car -> speed * cos(car ->yaw + β);
-    double dY = car -> speed * sin(car ->yaw + β);
-    double dψ = car -> speed * cos(β) * tan(car -> steeringAngle) / L;
-    std::vector<double> con {dX, dY, dψ, β};
-    return con;
-}
-
-std::vector<double> Dynamics::bicycle_kinematics_backward(Vehicle* car)
-{
-    double L = car -> lf + car -> lr;
-double β = - atan(car -> lf * tan(car -> steeringAngle) / L);;
-double dX = car -> speed * cos(car -> yaw + β);
-double dY = car -> speed * sin(car ->yaw + β);
-double dψ = - car -> speed * cos(β) * tan(car -> steeringAngle) / L;
-std::vector<double> con {dX, dY, dψ, β};
-return con;
 }
 
 
