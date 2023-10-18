@@ -12,8 +12,7 @@
 #include <vector>
 #include "Vehicle.hpp"
 namespace Dynamics{
-    std::vector<double> bicycle_kinematics(double lf,double lr,double v, double ψ, double δf);
-    
+std::vector<double> bicycle_kinematics(double lf,double lr,double v, double ψ,double δf,double δr);
     void test();
 }
 #endif /* Dynamics_hpp */

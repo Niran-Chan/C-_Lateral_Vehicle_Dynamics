@@ -12,18 +12,17 @@
 //#include "odeint.hpp" //ODE Library
 
 
-std::vector<double> Dynamics::bicycle_kinematics(double lf,double lr,double v, double ψ, double δf){
+std::vector<double> Dynamics::bicycle_kinematics(double lf,double lr,double v, double ψ, double δf,double δr){
+    //Bicycle Kinematics for Centre of Vehicle
     //std::cout << "Bicycle Kinematics Function" << std::endl;
     double L = lf + lr;
-    double β = atan(lr * tan(δf) / L); //Slip Angle
-    double dX = v * cos(ψ + β); //Change in X Direction
-    double dY = v * sin(ψ + β); //Change in Y Direction
-    double dψ = v * cos(β) * tan(δf) / L; //Change in Steering Rate
-    double dθ = v * sin(δf)/L; //Change in Heading Angle
-    std::vector<double> vars {dX, dY, dψ,dθ,β};
+    double β = atan((lr * tan(δf) + lf * tan(δr)) / L); //Slip Angle
+    double Vx = v * cos(ψ + β); //Change in X Direction
+    double Vy = v * sin(ψ + β); //Change in Y Direction
+    double dψ = v * cos(β) * (tan(δf) - tan(δr))/L ; //Change in Heading Angle
+    std::vector<double> vars {Vx, Vy, dψ};
     return vars;
 }
-
 
 void Dynamics::test(){
     std::cout<<"From header file" << std::endl;

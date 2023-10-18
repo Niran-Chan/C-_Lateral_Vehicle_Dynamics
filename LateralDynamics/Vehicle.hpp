@@ -25,19 +25,18 @@ public:
     double m   = ego.param[:m] //Mass
     double Iz  = ego.param[:Iz] //Mass Moment of Inertia About Z Axis
      */
-    double v = 10; //Velocity
-    double slipAngle  = 1; //Slip Angle
-    double yawRate   = 1;//Yaw Rate
-    double steeringAngle  = 1; //Steering Angle
+    double v = 10; //Velocity, m/s
+    double slipAngle  = 0.3; //Slip Angle (Difference between Heading Direction and Current Vehicle Direction, radians
+    double δf = 1;
+    double δr = 0; //0 as vehicle is front wheel steering only
     double Cαf = 1;//
     double Cαr = 1;
     double lf  = 1;
     double lr  = 1;
     double m   = 1000; //Mass in kg
     double Iz  = 1;//Mass Moment of Inertia About Z Axis
-    double yaw = 1;
-    double speed = 3;
-    double steeringRate = 1;
+    double ψ = 1; //heading angle: Orientation of vehicle wrt global X axis
+    //double speed = 3;
     
     
     //Constructor
