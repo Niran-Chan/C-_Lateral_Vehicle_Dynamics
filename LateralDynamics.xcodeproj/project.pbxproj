@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9888535A2AE7A5A800FFEA26 /* HelperFunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988853582AE7A5A800FFEA26 /* HelperFunctions.cpp */; };
 		989BF78B2ADE3D740007B7C5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 989BF78A2ADE3D740007B7C5 /* main.cpp */; };
 		989BF7972ADE47490007B7C5 /* Dynamics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 989BF7952ADE47490007B7C5 /* Dynamics.cpp */; };
 		989BF79A2ADE4C820007B7C5 /* Vehicle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 989BF7982ADE4C820007B7C5 /* Vehicle.cpp */; };
@@ -25,6 +26,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		988853582AE7A5A800FFEA26 /* HelperFunctions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = HelperFunctions.cpp; sourceTree = "<group>"; };
+		988853592AE7A5A800FFEA26 /* HelperFunctions.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = HelperFunctions.hpp; sourceTree = "<group>"; };
 		989BF7872ADE3D740007B7C5 /* LateralDynamics */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LateralDynamics; sourceTree = BUILT_PRODUCTS_DIR; };
 		989BF78A2ADE3D740007B7C5 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		989BF7952ADE47490007B7C5 /* Dynamics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Dynamics.cpp; sourceTree = "<group>"; };
@@ -64,6 +67,8 @@
 			isa = PBXGroup;
 			children = (
 				989BF78A2ADE3D740007B7C5 /* main.cpp */,
+				988853582AE7A5A800FFEA26 /* HelperFunctions.cpp */,
+				988853592AE7A5A800FFEA26 /* HelperFunctions.hpp */,
 				989BF7952ADE47490007B7C5 /* Dynamics.cpp */,
 				989BF7962ADE47490007B7C5 /* Dynamics.hpp */,
 				989BF7982ADE4C820007B7C5 /* Vehicle.cpp */,
@@ -130,6 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				989BF78B2ADE3D740007B7C5 /* main.cpp in Sources */,
+				9888535A2AE7A5A800FFEA26 /* HelperFunctions.cpp in Sources */,
 				989BF79A2ADE4C820007B7C5 /* Vehicle.cpp in Sources */,
 				989BF7972ADE47490007B7C5 /* Dynamics.cpp in Sources */,
 			);
