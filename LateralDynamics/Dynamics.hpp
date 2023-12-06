@@ -14,6 +14,6 @@
 namespace Dynamics{
 void bicycle_kinematics(Vehicle* car,double dt);
 void test();
-void bicycle_dynamics(Vehicle* car);
+void fourWheelDynamics(Vehicle* car);
 }
 #endif /* Dynamics_hpp */

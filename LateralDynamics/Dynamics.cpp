@@ -50,7 +50,8 @@ void Dynamics::bicycle_kinematics(Vehicle* car,double dt){
     car -> ψ = std::fmod((car -> ψ + dψ * dt),(2*M_PI)); //Keep within 360 degrees
     car -> v = car -> ψ >= M_PI/2 &&  car -> ψ <= 3*M_PI/2 ? -car -> v : car->v; //Giving Velocity its direction based on the heading angle
 }
-void Dynamics::bicycle_dynamics(Vehicle* car){
+//4-Wheeler
+void Dynamics::fourWheelDynamics(Vehicle* car){
     double lf = car -> lf;
     double lr = car -> lr;
     double m = car -> m;
