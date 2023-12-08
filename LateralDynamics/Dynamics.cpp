@@ -46,9 +46,10 @@ void Dynamics::bicycle_kinematics(Vehicle* car,double dt){
     double Vy = v * sin(ψ + β); //Change in Y Direction
     double dψ = v * cos(β) * (tan(δf) - tan(δr))/L ; //Change in Heading Angle
     
-    car -> v = sqrt(pow(Vx,2) + pow(Vy,2));
+    //car -> v = sqrt(pow(Vx,2) + pow(Vy,2));
+    car -> v = Vx + Vy;
     car -> ψ = std::fmod((car -> ψ + dψ * dt),(2*M_PI)); //Keep within 360 degrees
-    car -> v = car -> ψ >= M_PI/2 &&  car -> ψ <= 3*M_PI/2 ? -car -> v : car->v; //Giving Velocity its direction based on the heading angle
+    //car -> v = car -> ψ >= M_PI/2 &&  car -> ψ <= 3*M_PI/2 ? -car -> v : car->v; //Giving Velocity its direction based on the heading angle
 }
 //4-Wheeler
 void Dynamics::fourWheelDynamics(Vehicle* car){
