@@ -13,8 +13,8 @@
 #include "Vehicle.hpp"
 
 namespace Dynamics{
-void bicycle_kinematics(Vehicle* car,double dt);
+void bicycleKinematics(Vehicle* car,double dt);
 void test();
-void fourWheelDynamics(Vehicle* car);
+void bicycleDynamics(Vehicle* car);
 }
 #endif /* Dynamics_hpp */

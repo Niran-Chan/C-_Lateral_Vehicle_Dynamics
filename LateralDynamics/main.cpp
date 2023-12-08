@@ -36,14 +36,15 @@ int main(int argc, const char * argv[]) {
     //Bicycle Kinematics
     while(t<10){
         //std::cout << "Starting Heading Angle, ѱ: " << car -> ψ/(2*M_PI) * 360<< " deg" << std::endl;
-        Dynamics::bicycle_kinematics(car,dt);
+        Dynamics::bicycleKinematics(car,dt);
         t += dt;
         storeAsVector(t,car->v,time,vel);
-        //std::cout << "Velocity of Car: " << car -> v << std::endl;
-        //std::cout << "Heading Angle, ѱ: " << car -> ψ/(2*M_PI) * 360<< " deg" << std::endl;
-        //std::cout << "--------" << std::endl;
+        //Dynamics::bicycleDynamics(car);
+        std::cout << "Velocity of Car: " << car -> v << std::endl;
+        std::cout << "Heading Angle, ѱ: " << car -> ψ/(2*M_PI) * 360<< " deg" << std::endl;
+        std::cout << "--------" << std::endl;
     }
-    std::vector<std::string> headers {"Time","Velocity"};
-    HelperFunctions::toCsv("data.csv",headers,time,vel);
+    //std::vector<std::string> headers {"Time","Velocity"};
+    //HelperFunctions::toCsv("data.csv",headers,time,vel);
     return 0;
 }

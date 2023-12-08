@@ -25,24 +25,25 @@ public:
     double m   = ego.param[:m] //Mass
     double Iz  = ego.param[:Iz] //Mass Moment of Inertia About Z Axis
      */
-    double v = 10; //Velocity, m/s
+    double v = 1; //Velocity, m/s
     double slipAngle  = 0.3; //Slip Angle (Difference between Heading Direction and Current Vehicle Direction, radians
-    double δf = 1; //Angle of Front Tire wrt longitudinal axis
+    double δf = 20/180 * M_PI; //Angle of Front Tire wrt longitudinal axis of Vehicle (rad)
     double δr = 0; //0 as vehicle is front wheel steering only
     double lf  = 1;
     double lr  = 1;
     double m   = 1000; //Mass in kg
     double Iz  = (1/12) *(pow(2,2) + pow(2.5,2));//Mass Moment of Inertia About Z Axis (Approximation of 6m length, 2m width and 2.5m height)
-    double ψ = M_PI; //heading angle: Orientation of vehicle wrt global X axis in radians
+    double ψ = 0; //heading angle: Orientation of vehicle wrt global X axis in radians
     
     //Slip Dynamics Coefficients
-    double Cαf = 1;//Proportionality Constant, in this case Cornering Stiffness
-    double Cαr = 1;
-    double θVf = 1; //Front Tyre Velocity Angle (A portion of the δf as at high speeds, velocity does not immediately change due to inertia)
+    double Cαf = 1;//Proportionality Constant, in this case Cornering Stiffness of Front Wheel
+    double Cαr = 1;//Proportionality Constant, in this case Cornering Stiffness of Rear Wheel
+    double θVf = 1; //Front Tyre Velocity Angle (A portion of the δf as at high speeds, velocity does not immediately change due to inertia) (rad)
     double θVr = 1;
     double lw = 1; //car wheelbase width
     double L = 2; //Length of Vehicle
     //State space model excluding road bank angle
+    //u is the final output
     std::vector<std::vector<std::vector<double>>> du;
     //Constructor
     Vehicle(){
