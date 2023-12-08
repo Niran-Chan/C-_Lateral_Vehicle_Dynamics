@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <vector>
 #include "Vehicle.hpp"
+
 namespace Dynamics{
 void bicycle_kinematics(Vehicle* car,double dt);
 void test();
