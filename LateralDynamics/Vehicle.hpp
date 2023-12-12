@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <math.h>
 class Vehicle {
 public:
     //Set Vehicle Params
@@ -25,9 +26,8 @@ public:
     double m   = ego.param[:m] //Mass
     double Iz  = ego.param[:Iz] //Mass Moment of Inertia About Z Axis
      */
-    double v = 1; //Velocity, m/s
-    double slipAngle  = 0.3; //Slip Angle (Difference between Heading Direction and Current Vehicle Direction, radians
-    double δf = 20/180 * M_PI; //Angle of Front Tire wrt longitudinal axis of Vehicle (rad)
+    double v = 10; //Velocity, m/s
+    double δf = M_PI; //Angle of Front Tire wrt longitudinal axis of Vehicle (rad)
     double δr = 0; //0 as vehicle is front wheel steering only
     double lf  = 1;
     double lr  = 1;

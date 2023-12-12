@@ -41,11 +41,11 @@ void Dynamics::bicycleKinematics(Vehicle* car,double dt){
     double δr = car -> δr;
     
     double L = lf + lr;
-    double β = atan((lr * tan(δf) + lf * tan(δr)) / L); //Slip Angle
-    double Vx = v * cos(ψ + β); //Change in X Direction
-    double Vy = v * sin(ψ + β); //Change in Y Direction
+    double β = atan((lr * tan(δf) + lf * tan(δr)) / L); //Slip Angle (Difference between Heading Direction and Current Vehicle Direction, radians)
+    double Vx = v * cos(ψ + β); //Change in X Direction wrt x axis
+    double Vy = v * sin(ψ + β); //Change in Y Direction wrt y axis
     double dψ = v * cos(β) * (tan(δf) - tan(δr))/L ; //Change in Heading Angle
-    
+    //std::cout << car -> δf << std::endl;
     //car -> v = sqrt(pow(Vx,2) + pow(Vy,2));
     car -> v = Vx + Vy;
     car -> ψ = std::fmod((car -> ψ + dψ * dt),(2*M_PI)); //Keep within 360 degrees

@@ -13,7 +13,8 @@
 #include <vector>
 
 namespace HelperFunctions{
-void toCsv(std::string fileName,std::vector<std::string> headers,std::vector<double> x,std::vector<double> y);
+void storeAsVector(std::vector<double> vecIn,std::vector<std::vector<double>>& vecOut);
+void toCsv(std::string fileName,std::vector<std::string> headers,std::vector<std::vector<double>> x);
 void fromCsv(std::string);
 void test();
 }
