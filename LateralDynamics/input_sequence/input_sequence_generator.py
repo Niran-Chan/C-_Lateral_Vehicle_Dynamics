@@ -38,7 +38,6 @@ def randInput():
     np.savetxt("x0File.csv", x0, delimiter=",")
     np.savetxt("inputFile.csv", input_data, delimiter=",")
 
-def step_unit(t,dt,file_name):
     #Define a unit step function
     # f(t) =0 for t < 1
     # f(t) = 1 for t >= 1
@@ -48,21 +47,41 @@ def step_unit(t,dt,file_name):
 heaviside(x1, x2) =  x2   if x1 == 0
                       1   if x1 > 0
      '''
-    curr_t =0
-    fin = [] # Each Column represent a unit of time and value of input 
-    time_delay = 5 
-    while(curr_t < t):
-        ft = np.heaviside(curr_t - time_delay,0.5) #Scalar value
-        fin.append([ft])
-        curr_t += dt
-    #print(fin)
-    fin = np.array(fin)
-    np.savetxt(file_name,fin,delimiter=",")
-    print("[+] Exported Step Unit Function,",time_delay,"s time delay,file ",file_name)
 
-
+def general_input(t,dt,file_name,t_start,t_delay,fn,plot=True):
+    f = []
+    for i in np.arange(t_start,t,dt):
+        f.append([fn(i,t_delay)])
+        #print(f)
     
+    np.savetxt(file_name,f,delimiter=",")
+    
+    if(plot):
+        plt.plot(f)
+        plt.show()
+    
+    print("[+] Exported ",file_name,",",t_delay,"s time delay")
+
+
 if __name__ == '__main__':
     t = 10 #Total Time
     dt = 0.01 #Time step
-    step_unit(t,dt,"step_input.csv")
+    t_delay=5 #Time delay
+    t_start = 0 #Time Start
+    #step_input(t,dt,"step_input.csv")
+    #ramp_input(t,dt,"ramp_input.csv")
+    #sinusoidal_input()
+    
+    #Generate Test Files
+    
+    #Ramp Input
+    general_input(t,dt,"ramp_input.csv",t_start,t_delay,fn = lambda t_start,t_delay:(1 * (t_start - t_delay) )* np.heaviside((t_start - t_delay),0.5),plot=False)
+    
+    #Step Input
+    general_input(t,dt,"step_input.csv",t_start,t_delay,fn = lambda t_start,t_delay:np.heaviside(t_start - t_delay,0.5),plot=False)
+    
+    #Sinusoidal Input
+    general_input(t,dt,"sinusoidal_input.csv",t_start,t_delay,fn = lambda t_start,t_delay:np.heaviside((t_start-t_delay),0.5)*np.sin(t_start-t_delay),plot=False)
+
+    #Impulse Input
+    general_input(t,dt,"impulse_input.csv",t_start,t_delay,fn = lambda t_start,t_delay: 1 if t_start == t_delay else 0,plot=False)
