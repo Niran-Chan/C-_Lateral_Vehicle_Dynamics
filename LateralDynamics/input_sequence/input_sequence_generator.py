@@ -50,10 +50,13 @@ heaviside(x1, x2) =  x2   if x1 == 0
 
 def general_input(t,dt,file_name,t_start,t_delay,fn,plot=True):
     f = []
+    m = 0;
     for i in np.arange(t_start,t,dt):
         f.append([fn(i,t_delay)])
+        m+=1
         #print(f)
-    
+    f = np.array(f)
+    f = f.reshape(1,m)
     np.savetxt(file_name,f,delimiter=",")
     
     if(plot):
