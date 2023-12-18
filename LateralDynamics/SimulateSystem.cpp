@@ -57,14 +57,31 @@ void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd x0,Ma
     this -> C = C;
     this -> x0 = x0;
     this -> inputSequence = inputSequence;
+    this -> n = A.rows();
+    this -> m = B.cols();
+    this -> r = C.rows();
+    this -> timeSamples = inputSequence.cols();
+ 
+    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();
+    simulatedStateSequence.resize(n, timeSamples);  simulatedStateSequence.setZero();
+
+    timeRowVector.resize(1, timeSamples);
+ 
+    for (int i = 0; i < timeSamples; i++)
+    {
+        timeRowVector(0, i) = i + 1;
+    }
+    std::cout << timeSamples << std::endl;
 }
 void SimulateSystem::getMatrices(){
     //Private Class Getter
-    std::cout << "Importance Matrices" << std::endl;
-    std::cout << "A: " << this -> A << std::endl;
-    std::cout << "B: " << this -> B << std::endl;
-    std::cout << "C: " << this -> C << std::endl;
-    std::cout << "x0: " << this -> x0 << std::endl;
+    std::cout << "Important Matrices" << std::endl;
+    std::cout << "A:\n " << this -> A << std::endl;
+    std::cout << "B:\n " << this -> B << std::endl;
+    std::cout << "C:\n " << this -> C << std::endl;
+    std::cout << "x0:\n" << this -> x0 << std::endl;
+    //std::cout << "Input Sequence:\n " << this -> inputSequence << std::endl;
+    std::cout << "Time Samples: " << this -> timeSamples << std::endl;
     
 }
  
@@ -167,7 +184,7 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen)
  
     // this variable is used to track the number of rows
     int matrixRowNumber = 0;
- 
+    int ncols =0 ;
  
     while (std::getline(matrixDataFile, matrixRowString)) // here we read a row by row of matrixDataFile and store every line into the string variable matrixRowString
     {
@@ -176,12 +193,15 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen)
         while (std::getline(matrixRowStringStream, matrixEntry,',')) // here we read pieces of the stream matrixRowStringStream until every comma, and store the resulting character into the matrixEntry
         {
             matrixEntries.push_back(std::stod(matrixEntry));   //here we convert the string to double and fill in the row vector storing all the matrix entries
+            ncols ++;
             }
         matrixRowNumber++; //update the column numbers
     }
- 
+    std::cout << "Number of rows: " << matrixRowNumber << std::endl;
+    std::cout << "Number of cols: " << ncols << std::endl;
     // here we conver the vector variable into the matrix and return the resulting object,
     // note that matrixEntries.data() is the pointer to the first memory location at which the entries of the vector matrixEntries are stored;
+    //std::cout <<"Number of columnds found: " <<  matrixRowNumber << std::endl;
     return Map<Matrix<double, Dynamic, Dynamic, RowMajor>> (matrixEntries.data(), matrixRowNumber, matrixEntries.size() / matrixRowNumber);
  
 }

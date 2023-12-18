@@ -15,6 +15,7 @@
 #include "SimulateSystem.hpp"
 
 class Vehicle {
+    //Vehicle Parameters
 
 public:
     double v;//Velocity, m/s
@@ -33,9 +34,6 @@ public:
     double θVr;
     double lw; //car wheelbase width
     double L; //Length of Vehicle
-    SimulateSystem* du;
-    //State space model (excluding road bank angle)
-    //u is the final output
 
     Vehicle(); 
     
