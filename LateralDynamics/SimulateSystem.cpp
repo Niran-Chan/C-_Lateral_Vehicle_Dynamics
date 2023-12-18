@@ -6,7 +6,11 @@
 //
 
 #include "SimulateSystem.hpp"
- 
+
+
+const std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/";
+//Fixed File Path (eventually to relative directories)
+
 SimulateSystem::SimulateSystem() //Default Constructor
 {
     m = 0; n = 0; r = 0;
@@ -39,6 +43,12 @@ SimulateSystem::SimulateSystem(MatrixXd Amatrix, MatrixXd Bmatrix, MatrixXd Cmat
     }
  
 }
+ 
+SimulateSystem::~SimulateSystem() //destructor
+{
+}
+//METHODS
+
 
 void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd x0,MatrixXd inputSequence){
     //Private Class Setter
@@ -58,10 +68,6 @@ void SimulateSystem::getMatrices(){
     
 }
  
-SimulateSystem::~SimulateSystem() //destructor
-{
-}
- 
 std::tuple<MatrixXd, MatrixXd, MatrixXd> SimulateSystem::getStateOuputTime()
 {
     std::tuple<MatrixXd, MatrixXd, MatrixXd>   result(simulatedStateSequence, simulatedOutputSequence, timeRowVector);
@@ -71,15 +77,15 @@ std::tuple<MatrixXd, MatrixXd, MatrixXd> SimulateSystem::getStateOuputTime()
 void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string CFile, std::string x0File, std::string inputSequenceFile, std::string simulatedStateSequenceFile, std::string simulatedOutputSequenceFile) const
 {
     const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
- 
-    std::ofstream fileA(AFile);
+    
+    std::ofstream fileA(FILEPATH + AFile);
     if (fileA.is_open())
     {
         fileA << A.format(CSVFormat);
         fileA.close();
     }
  
-    std::ofstream fileB(BFile);
+    std::ofstream fileB(FILEPATH + BFile);
     if (fileB.is_open())
     {
         fileB << B.format(CSVFormat);
@@ -87,7 +93,7 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
     }
  
      
-    std::ofstream fileC(CFile);
+    std::ofstream fileC(FILEPATH + CFile);
     if (fileC.is_open())
     {
         fileC << C.format(CSVFormat);
@@ -96,7 +102,7 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
  
  
  
-    std::ofstream fileX0(x0File);
+    std::ofstream fileX0(FILEPATH + x0File);
     if (fileX0.is_open())
     {
         fileX0 << x0.format(CSVFormat);
@@ -104,21 +110,21 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
     }
  
  
-    std::ofstream fileInputSequence(inputSequenceFile);
+    std::ofstream fileInputSequence(FILEPATH + inputSequenceFile);
     if (fileInputSequence.is_open())
     {
         fileInputSequence << inputSequence.format(CSVFormat);
         fileInputSequence.close();
     }
  
-    std::ofstream fileSimulatedStateSequence(simulatedStateSequenceFile);
+    std::ofstream fileSimulatedStateSequence(FILEPATH + simulatedStateSequenceFile);
     if (fileSimulatedStateSequence.is_open())
     {
         fileSimulatedStateSequence << simulatedStateSequence.format(CSVFormat);
         fileSimulatedStateSequence.close();
     }
  
-    std::ofstream fileSimulatedOutputSequence(simulatedOutputSequenceFile);
+    std::ofstream fileSimulatedOutputSequence(FILEPATH + simulatedOutputSequenceFile);
     if (fileSimulatedOutputSequence.is_open())
     {
         fileSimulatedOutputSequence << simulatedOutputSequence.format(CSVFormat);
