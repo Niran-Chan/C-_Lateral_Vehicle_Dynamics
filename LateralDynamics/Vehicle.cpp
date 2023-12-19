@@ -30,7 +30,8 @@ Vehicle::Vehicle(){
     this -> lf  = 3.5;
     this -> lr  = 3.5;
     this -> m   = 1000; //Mass in kg
-    this -> Iz  = (1/12) *(pow(2,2) + pow(2.5,2));//Mass Moment of Inertia About Z Axis (Approximation of 6m length, 2m width and 2.5m height)
+    this -> Iz  = (1.0/12.0) *(std::pow(2,2) + std::pow(2.5,2));//Mass Moment of Inertia About Z Axis (Approximation of 6m length, 2m width and 2.5m height)
+    //ENSURE FOR FLOAT MATH OPERATIONS, REPRESENT NUMBERS WITH DECIMALS
     this -> ψ = M_PI_4; //heading angle: Orientation of vehicle wrt global X axis in radians
     
     //Slip Dynamics Coefficients
@@ -45,7 +46,6 @@ Vehicle::Vehicle(){
     //std::vector<std::vector<std::vector<double>>> du; //Dynamics Model
     
     //Initialise State Space Model
-    this -> du = new SimulateSystem(); //Construct State Space Model Object Instance
-    du -> getMatrices();
+    //this -> du = new SimulateSystem(); //Construct State Space Model Object Instance
     
 }
