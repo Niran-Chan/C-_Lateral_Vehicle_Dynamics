@@ -13,9 +13,10 @@
 #include "Dynamics.hpp"
 #include "Vehicle.hpp"
 #include "HelperFunctions.hpp"
+#include "SimulateSystem.hpp"
 
 const double g = 9.81; //double instead of other data types to avoid casting
-const double dt = 0.01; //Time step
+const double dt = 0.001; //Time step
 double t = 0; //Starting Time Frame
 //Functions are standardised, and used for seperate vehicle models
 //Using as a header files is preferred
@@ -26,8 +27,11 @@ int main(int argc, const char * argv[]) {
     //Use Discrete Time Model to Observe Changes
 
     std::vector<std::vector<double>> vecToCsv;
-
+    //Mention timesamples later
+    Dynamics::bicycleDynamics(car); //Evaluate Dynamics for Car
+    
     //Bicycle Kinematics
+    /*
     while(t<10){
         //std::cout << "Starting Heading Angle, ѱ: " << car -> ψ/(2*M_PI) * 360<< " deg" << std::endl;
         Dynamics::bicycleKinematics(car,dt);
@@ -38,7 +42,12 @@ int main(int argc, const char * argv[]) {
         std::cout << "Heading Angle, ѱ: " << car -> ψ/(2*M_PI) * 360<< " deg" << std::endl;
         std::cout << "--------" << std::endl;
     }
+    
     std::vector<std::string> headers {"Time","Velocity","Heading angle"};
     HelperFunctions::toCsv("data1.csv",headers,vecToCsv);
+     */
+    //Use Family of Functions to test for basic coherence of model
+    
+    
     return 0;
 }
