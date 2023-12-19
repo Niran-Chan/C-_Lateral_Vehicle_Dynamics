@@ -36,7 +36,7 @@ void Dynamics::bicycleDynamics(Vehicle* car){
     double lr = car -> lr;
     double lw = car -> lw;
     double m = car -> m;
-    double Iz = car -> m;
+    double Iz = car -> Iz;
     double Cαf = car -> Cαf;
     double Cαr = car ->Cαr;
     double θVf = car -> θVf;
@@ -67,9 +67,9 @@ void Dynamics::bicycleDynamics(Vehicle* car){
     MatrixXd B {{0},{2*Cαf/m},{0},{2*lf*Cαf/Iz}};
     
     SimulateSystem* du = new SimulateSystem();//Create State Space Model for Simulation
-    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/input_sequence/step_input.csv"); //Our input currently is the direction of the front tire,δ, assuming that this is our current input value for our tires
-    
-    MatrixXd C;C.resize(1, 4); C.setZero();C(0,1) = 1;// Output Matrix Coefficient
+    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/input_sequence/ramp_input.csv"); //Our input currently is the direction of the front tire,δ, assuming that this is our current input value for our tires
+
+    MatrixXd C;C.resize(1, 4); C.setZero();C(0,1) = 1;// Output Matrix Coefficient, Velocity in Y only
     MatrixXd x0;x0.resize(4,1);x0.setZero();
     x0(0,0) = 0;
     x0(1,0) = Vy;
