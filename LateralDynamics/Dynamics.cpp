@@ -77,7 +77,7 @@ void Dynamics::bicycleDynamics(Vehicle* car){
     x0(3,0) = dψ; //Initial Conditions of state variables
 
     du -> setMatrices(A,B,C, x0, inputSequence);
-    du -> getMatrices();
+    du -> printSimulationParams();
     du -> runSimulation();
     du -> saveData("A.csv","B.csv","C.csv","x0.csv", "inputSequenceFile.csv", "simulatedStateSequence.csv", "simulatedOutputSequenceFile.csv"); 
     /*

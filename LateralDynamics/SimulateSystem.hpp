@@ -1,9 +1,9 @@
-// Class for simulating a linear state-space model
-//  x_{k+1}=Ax_{k}+Bu_{k}
-//  y_{k} = Cx_{k}
-//  starting from the initial state x0;
-// The class is implemented using the Eigen library:
-// http://eigen.tuxfamily.org/index.php?title=Main_Page
+/// Class for simulating a linear state-space model
+///  x_{k+1}=Ax_{k}+Bu_{k}
+///  y_{k} = Cx_{k}
+
+/// The class is implemented using the Eigen library:
+/// http://eigen.tuxfamily.org/index.php?title=Main_Page
 //*******************************************************************************************************************************
 // AUTHOR: Aleksandar Haber,Niranjan Gopinath
 // DEVELOPMENT: June 2020 - December 2023
@@ -28,39 +28,86 @@ class SimulateSystem {
 public:
      
     //CONSTRUCTORS & DESTRUCTORS
+    //!Default Constructor
+    /*!Sets all the variables to 1x1 dimensional matrices and sets all the variables to zero. This is most ideal if input sequence has yet to be imported.
+     */
     SimulateSystem();
-    // default constructor
-    // sets all the variables to 1x1 dimensional matrices and sets all the variables to zero
      
+    //!Overloaded Constructor
+    /*!Assigns all private variables
+     */
     SimulateSystem(MatrixXd Amatrix, MatrixXd Bmatrix, MatrixXd Cmatrix, MatrixXd initialState, MatrixXd inputSequenceMatrix);
-    // overloaded constructor assigns all the private variables
     
+    //!Default Destructor
+    /*!Destroys instance of SimulateSystem*/
     ~SimulateSystem();
     // Default destructor  - currently just an empty implementation in the ".cpp" file
      
     // MatrixXd is an Eigen typdef for Matrix<double, Dynamic, Dynamic>
-    std::tuple<MatrixXd, MatrixXd, MatrixXd> getStateOuputTime();
-    //this function returns the simulated state and output sequences, as well as the time row vector used for simulation
-    
+
     //METHODS
+    /*!
+      \return Tuple of Simulated State, Simulated Output sequence,Time Row vector
+     \sa printSimulationParams
+    */
+    std::tuple<MatrixXd, MatrixXd, MatrixXd> getStateOuputTime();
     
+    /*!Setter values of private variables in SimulatedSystem Class
+        \param A Eigen Matrix of State Variables Coefficient
+        \param B Eigen Matrix of Input Coefficient
+        \param C Eigen Matrix of Output State Model Coefficient
+        \param x0 Eigen Matrix of Initial State Variables
+        \param inputSequence Eigen Matrix of input sequence, usually existing as Scalar Input u ( State Space Model = Ax + Bu )
+     */
     void setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd x0,MatrixXd inputSequence);
-    void getMatrices();
-    //Getters and Setters of Private Matrices
- 
+    ///<Setter for private variables A, B, C, x0 and InputSequence
+    
+    /*!Get values of private variables in SimulatedSystem Class
+    \return vector in {A,B,C,x0,inputSequence}
+     \sa printSimulationParams
+     */
+    std::vector<MatrixXd> getMatrices();
+    ///<Getter in the form A,B,C,x0 and InputSequence
+    
+    /*!Print Simulation Parameters. Ideal for debugging
+        \param moreParams=false default parameter. Set to true to print more information.
+     */
+    void printSimulationParams(bool moreParams=false);
+    ///<Print Simulation Params at current state. Insert argument to show more information about params.
+    
+    /*!Run Simulation*/
     void runSimulation();
-    // function that simulates the system
- 
+    ///<Run simulation
+    
+    /*!Export data into CSV Format
+     \param AFile Matrix A File Name
+     \param BFile Matrix B File Name
+     \param CFile Matrix C File Name
+     \param x0File Matrix x0 File Name
+     \param inputSequenceFile Matrix inputSequence File Name
+     \param simulatedStateSequenceFile Matrix simulatedStateSequence File Name
+     \param simulatedOutputSequenceFile Matrix simulatedOutputSequence File Name
+     */
     void saveData(std::string AFile, std::string BFile, std::string CFile, std::string x0File, std::string inputSequenceFile, std::string simulatedStateSequenceFile, std::string simulatedOutputSequenceFile) const;
-    // this function saves the data in "*.csv" files
+    ///<Save data into CSV files
      
- 
+    /*!Import CSV File
+        \param fileToOpen String of file name with file path if not current working directory
+        \return Eigen Matrix of imported CSV
+     */
     MatrixXd openData(std::string fileToOpen);
-    // this function opens the "*.csv" file "fileToOpen" that stores a matrix, and loads the entries into the Eigen matrix MatrixXd
-     
+    ///<Opens file in argument and loads the entries into the Eigen matrix MatrixXd. File in CSV must have also been a matrix.
+    
+    /*!Start SimulateSystem Class Instance from already stored CSV files
+        \param Afile String File Name of Matrix A
+     \param Bfile String File Name of Matrix B
+     \param Cfile String File Name of Matrix C
+     \param x0file String File Name of State Variables
+     \param inputSequenceFile String File Name of input sequence
+                
+     */
     void openFromFile(std::string Afile, std::string Bfile, std::string Cfile, std::string x0File, std::string inputSequenceFile);
- 
-    // this function assigns the A,B,C,x0, inputSequence variables using the information stored in the corresponding files
+    ///<A form of constructor, making use of openData multiple times to open and save files into Eigen Matrices.
     // this function calls the function MatrixXd openData(std::string fileToOpen);
     // this function acts as a constructor in some way.
     // call this function after a default constructor is being called
@@ -70,14 +117,25 @@ public:
  
 private:
     // MatrixXd is an Eigen typdef for Matrix<double, Dynamic, Dynamic>
-    MatrixXd  A,B,C; // A,B,C matrices
-    MatrixXd x0;     // initial state
-    MatrixXd inputSequence;  // input sequnce, dimensions: m\times  timeSamples
-    MatrixXd simulatedStateSequence; //simulated state sequence, dimensions: n\times  timeSamples
-    MatrixXd simulatedOutputSequence; //simulated output sequence, dimensions: r\times  timeSamples
-    MatrixXd timeRowVector;           // time row vector [0,1,2,3,\ldots, timeSamples-1]
+    MatrixXd A,B,C; ///<A and B are State Model Coefficient Matrices, where stateModel= Ax + Bu, where x is state variables and u is Input
+    MatrixXd x0;    ///<Initial value of state variables, x
+    MatrixXd inputSequence; ///<Input Sequence, U, where input can be scalar or a relevant Eigen Matrix
+                            //dimensions: m\times  timeSamples
+    MatrixXd simulatedStateSequence; ///<Instantaneous State Space Model at time t
+    // dimensions: n\times  timeSamples
+    MatrixXd simulatedOutputSequence; ///<Instantaneuous Output Model, where y = Cx + Du, and y is output
+    
+    // dimensions: r\times  timeSamples
+    MatrixXd timeRowVector;           ///<Vector containing time values for each frame
+    
+    //[0,1,2,3,\ldots, timeSamples-1]
      
-    int m, n, r, timeSamples; //m - input dimension, n- state dimension, r-output dimension, timeSamples- number of time samples
+    int m; ///<Input Dimension
+    int n; ///<State Dimension
+    int r; ///<Output Dimension
+    int timeSamples; ///<Defined Time of Simulation
+    
+    //m - input dimension, n- state dimension, r-output dimension, timeSamples- number of time samples
  
 };
 
