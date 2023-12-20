@@ -93,10 +93,6 @@ void Dynamics::bicycleDynamics(Vehicle* car){
     car -> du = du;
     */
 }
-//Error function for steering control system
-void Dynamics::steeringError(Vehicle* car){
-    //Develop State Space Model for Steering Here
-}
 void Dynamics::test(){
     std::cout<<"From header file" << std::endl;
 
