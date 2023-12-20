@@ -73,8 +73,9 @@ void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd x0,Ma
     }
     std::cout << timeSamples << std::endl;
 }
-void SimulateSystem::getMatrices(){
+std::vector<MatrixXd> SimulateSystem::getMatrices(){
     //Private Class Getter
+    /*
     std::cout << "Important Matrices" << std::endl;
     std::cout << "A:\n " << this -> A << std::endl;
     std::cout << "B:\n " << this -> B << std::endl;
@@ -82,7 +83,29 @@ void SimulateSystem::getMatrices(){
     std::cout << "x0:\n" << this -> x0 << std::endl;
     //std::cout << "Input Sequence:\n " << this -> inputSequence << std::endl;
     std::cout << "Time Samples: " << this -> timeSamples << std::endl;
+     */
+    std::vector<MatrixXd> res {};
+    res.push_back(this -> A);
+    res.push_back(this -> B);
+    res.push_back(this -> C);
+    res.push_back(this -> x0);
+    res.push_back(this -> inputSequence);
+    return res;
+}
+void SimulateSystem::printSimulationParams(bool moreParams){
     
+    std::cout << std::string(45,'-') << "\n";
+    std::cout << "\t\t\t\tSystem Params\t\t\t\t\t" << "\n";
+    std::cout << std::string(45,'-') << "\n";
+    std::cout << "Matrix A \n" << this -> A<< std::endl;
+    std::cout << "Matrix B \n" << this -> B<< std::endl;
+    std::cout << "Matrix C \n" << this -> C<< std::endl;
+    std::cout << "Initial State, x0 \n" << this -> x0<< std::endl;
+    if(moreParams) //More Verbose
+    {std::cout << "Input Sequence \n" << this -> inputSequence<< std::endl;
+    }
+    std::cout << "Time Samples for Simulation: " << this -> timeSamples<< " Frames "<<  std::endl;
+    std::cout << std::string(45,'-') << std::endl;
 }
  
 std::tuple<MatrixXd, MatrixXd, MatrixXd> SimulateSystem::getStateOuputTime()
