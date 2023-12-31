@@ -34,16 +34,11 @@ void Dynamics::bicycleKinematics(Vehicle* car,double dt){
 void Dynamics::bicycleDynamics(Vehicle* car){
     double lf = car -> lf;
     double lr = car -> lr;
-    double lw = car -> lw;
     double m = car -> m;
     double Iz = car -> Iz;
     double Cαf = car -> Cαf;
     double Cαr = car ->Cαr;
     double θVf = car -> θVf;
-    double θVr = car -> θVr;
-    double δf = car -> δf;
-    double δr = car -> δr;
-    double L = car -> L ;
     
     //double δ = sqrt((δr - δf)*L/lw);
     
@@ -61,25 +56,32 @@ void Dynamics::bicycleDynamics(Vehicle* car){
      State space sequence model: d/dt {y,y',ψ,ψ'}
     */
     
-    MatrixXd A {{0,1,0,0},{0,-2*(Cαf + Cαr)/(m * Vx),0,-Vx -2 * (Cαf*lf - Cαr*lr)/m*Vx},{0,0,0,1},{0,-2 * (Cαf*lf - Cαr*lr)/Iz*Vx,0,-2 * (Cαf*lf*lf + Cαr*lr*lr)/Iz*Vx}};
+    MatrixXd A {{0,1,0,0},{0,-2*(Cαf + Cαr)/(m * Vx),0,-Vx -2 * (Cαf*lf - Cαr*lr)/m*Vx},{0,0,0,1},{0,-2 * (Cαf*lf - Cαr*lr)/Iz*Vx,0,-2 * (Cαf*lf*lf + Cαr*lr*lr)/Iz*Vx}}; //4x4 Matrix
     
     //MatrixXd B {{0},{δ * 2*Cαf*δ/m},{0},{δ * 2*lf*Cαf/Iz}};
-    MatrixXd B {{0},{2*Cαf/m},{0},{2*lf*Cαf/Iz}};
+    MatrixXd B {{0},{2*Cαf/m},{0},{2*lf*Cαf/Iz}}; //4x1 Matrix, input must be in 1xtimeSamples matrix
     
     SimulateSystem* du = new SimulateSystem();//Create State Space Model for Simulation
-    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/input_sequence/ramp_input.csv"); //Our input currently is the direction of the front tire,δ, assuming that this is our current input value for our tires
-
+    //auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/input_sequence/ramp_input.csv"); //Our input currently is the direction of the front tire,δ, assuming that this is our current input value for our tires
+    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string> {"ref_yaw_deg"}); //Actual Test input
+    //std::cout << inputSequence << std::endl;
+    
     MatrixXd C;C.resize(1, 4); C.setZero();C(0,1) = 1;// Output Matrix Coefficient, Velocity in Y only
+
+    MatrixXd D; D.resize(1,1); D.setZero(); //Ackermann equation is controller gain for ackermann angle behaviour, which is difference between velocities of both the tires?
+    //u matrix is (1,m) matrix
+    
     MatrixXd x0;x0.resize(4,1);x0.setZero();
+    
     x0(0,0) = 0;
     x0(1,0) = Vy;
     x0(2,0) = ψ;
     x0(3,0) = dψ; //Initial Conditions of state variables
 
-    du -> setMatrices(A,B,C, x0, inputSequence);
+    du -> setMatrices(A,B,C,D, x0, inputSequence);
     du -> printSimulationParams();
     du -> runSimulation();
-    du -> saveData("A.csv","B.csv","C.csv","x0.csv", "inputSequenceFile.csv", "simulatedStateSequence.csv", "simulatedOutputSequenceFile.csv"); 
+    du -> saveData("A.csv","B.csv","C.csv","D.csv","x0.csv", "inputSequenceFile.csv", "simulatedStateSequence.csv", "simulatedOutputSequenceFile.csv");
     /*
     //Final equation is a + b
     if(du.size() == 2){
