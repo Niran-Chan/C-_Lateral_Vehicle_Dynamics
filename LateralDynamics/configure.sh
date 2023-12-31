@@ -1,4 +1,6 @@
 #! /bin/sh
+export  VCPKG_ROOT="/opt/vcpkg" #Change this to your directory where vcpkg is stored
+export PATH=$VCPKG_ROOT:$PATH
 
 echo "[+] Making Build Directory"
 if [ ! -d "build" ]
