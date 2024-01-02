@@ -110,6 +110,9 @@ public:
      \param inputSequenceFile String File Name of input sequence
                 
      */
+    /*!Resizing State Space and Output Model. Important if just importing from CSV.
+     */
+    void modelResize();
     void openFromFile(std::string Afile, std::string Bfile, std::string Cfile,std::string D, std::string x0File, std::string inputSequenceFile);
     ///<A form of constructor, making use of openData multiple times to open and save files into Eigen Matrices.
     // this function calls the function MatrixXd openData(std::string fileToOpen);

@@ -72,7 +72,9 @@ void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd D,Mat
     {
         timeRowVector(0, i) = i + 1;
     }
-    std::cout << timeSamples << std::endl;
+    //std::cout << timeSamples << std::endl;
+    std::cout << "[~] Time Samples Set: " << inputSequence.cols() << std::endl;
+    std::cout << "[+] Simulation Params Set!" << std::endl;
 }
 std::vector<MatrixXd> SimulateSystem::getMatrices(){
     //Private Class Getter
@@ -264,18 +266,41 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
             }
         matrixRowNumber++; //update the column numbers
     }
-    std::cout << "Number of rows: " << matrixRowNumber << std::endl;
+    std::cout << "Number of rows: " << headers.size() << std::endl;
     std::cout << "Mumber of Cols processed: " << ncols << std::endl;
     std::cout << "Number of valid cols: " << validCols << std::endl;
     std::cout << "Stride/step for array memory management : " << matrixEntries.size() / validCols << std::endl;
     // here we conver the vector variable into the matrix and return the resulting object,
     // note that matrixEntries.data() is the pointer to the first memory location at which the entries of the vector matrixEntries are stored;
     std::cout<< "Size of output array: " << matrixEntries.size() << std::endl;
-    return Map<Matrix<double, Dynamic, Dynamic, ColMajor>> (matrixEntries.data(),headers.size(),validCols); //Change to colmajor from RowMajor to transpose
-        //Change Stride denominator to matrixRosNumber if matrix not transposed
+    
+    //Access contiguous data in array as column data,Change to colmajor from RowMajor to transpose
+    return Map<Matrix<double, Dynamic, Dynamic, ColMajor>> (matrixEntries.data(),headers.size(),validCols);
+    
+    //Change Stride denominator to matrixRosNumber if matrix not transposed
     //Stride length if cols not specified: matrixEntries.size() / validCols
 }
+
+//Easier method to call for resizing state space and output model
+
+void SimulateSystem::modelResize(){
+    n = A.rows();
+    m = B.cols();
+    r = C.rows();
+    timeSamples = inputSequence.cols();
+
+    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();// C Rows x Time Samples
+    simulatedStateSequence.resize(n, timeSamples);  simulatedStateSequence.setZero();
+    //A rows x Time Samples
  
+    timeRowVector.resize(1, timeSamples);
+ 
+    for (int i = 0; i < timeSamples; i++)
+    {
+        timeRowVector(0, i) = i + 1;
+    }
+ 
+}
  
 void SimulateSystem::openFromFile(std::string Afile, std::string Bfile, std::string Cfile,std::string Dfile, std::string x0File, std::string inputSequenceFile)
 {
@@ -294,8 +319,9 @@ void SimulateSystem::openFromFile(std::string Afile, std::string Bfile, std::str
     r = C.rows();
     timeSamples = inputSequence.cols();
  
-    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();
+    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();// C Rows x Time Samples
     simulatedStateSequence.resize(n, timeSamples);  simulatedStateSequence.setZero();
+    //A rows x Time Samples
  
     timeRowVector.resize(1, timeSamples);
  
@@ -313,7 +339,9 @@ void SimulateSystem::runSimulation()
     {
         if (j == 0)
         {
-            simulatedStateSequence.col(j) = x0; //Equate current
+            //x0.col(j) can work if testing various different initial conditions
+            
+            simulatedStateSequence.col(j) = x0; //Equate current, there is an assertion error here on size
             simulatedOutputSequence.col(j) = C * x0 ;
             //D * inputSequence; //Time Invariant system
             
