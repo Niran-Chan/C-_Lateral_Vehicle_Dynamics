@@ -101,6 +101,10 @@ public:
     MatrixXd openData(std::string fileToOpen,std::vector<std::string> headers = {});
     ///<Opens file in argument and loads the entries into the Eigen matrix MatrixXd. File in CSV must have also been a matrix.
     
+    /*!Resizing State Space and Output Model. Important if just importing from CSV.
+     */
+    void modelResize();
+    
     /*!Start SimulateSystem Class Instance from already stored CSV files
         \param Afile String File Name of Matrix A
      \param Bfile String File Name of Matrix B
@@ -110,9 +114,6 @@ public:
      \param inputSequenceFile String File Name of input sequence
                 
      */
-    /*!Resizing State Space and Output Model. Important if just importing from CSV.
-     */
-    void modelResize();
     void openFromFile(std::string Afile, std::string Bfile, std::string Cfile,std::string D, std::string x0File, std::string inputSequenceFile);
     ///<A form of constructor, making use of openData multiple times to open and save files into Eigen Matrices.
     // this function calls the function MatrixXd openData(std::string fileToOpen);
