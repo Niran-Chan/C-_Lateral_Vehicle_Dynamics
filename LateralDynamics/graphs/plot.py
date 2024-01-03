@@ -5,17 +5,23 @@ import sys
 
 try:
     
-    df = pd.read_csv(sys.argv[1],verbose=True,skip_blank_lines=True)
+    df = pd.read_csv(sys.argv[1],skip_blank_lines=True)
     subplots=True
     plot_axes = []
+    
     if(len(sys.argv) >= 3):
         plot_axes = list(sys.argv[2::])
+        print("[~] Headers indicated: ",plot_axes)
         subplots = False
-    if(subplots):
+
+    if(subplots == True):
+        print("[~] No specific headers supplied\n")
         df.plot(subplots=True,sharex=True) #Show each subplot
-    else:
+
+    if(subplots == False):
         for graph in plot_axes:
-            df.plot(graph)
+            print("Plotting")
+            df[graph].plot()
     plt.show()
 
     #Condition to check if csv file uses rows as time vector
