@@ -170,14 +170,26 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
     std::ofstream fileSimulatedStateSequence(FILEPATH + simulatedStateSequenceFile);
     if (fileSimulatedStateSequence.is_open())
     {
-        fileSimulatedStateSequence << simulatedStateSequence.transpose().format(CSVFormat);
+        auto transposedStateSequence =simulatedStateSequence.transpose();
+        for(int i =1; i < transposedStateSequence.cols() + 1; ++i){
+           std::string isComma = i == transposedStateSequence.cols() ? "" : ",";
+            fileSimulatedStateSequence << "x" << std::to_string(i) << isComma;
+        }
+        fileSimulatedStateSequence << std::endl;
+        fileSimulatedStateSequence << transposedStateSequence.format(CSVFormat);
         fileSimulatedStateSequence.close();
     }
  
     std::ofstream fileSimulatedOutputSequence(FILEPATH + simulatedOutputSequenceFile);
     if (fileSimulatedOutputSequence.is_open())
     {
-        fileSimulatedOutputSequence << simulatedOutputSequence.transpose().format(CSVFormat);
+        auto transposedOutputSequence =simulatedOutputSequence.transpose();
+        for(int i =1; i < transposedOutputSequence.cols() + 1; ++i){
+           std::string isComma = i == transposedOutputSequence.cols() ? "" : ",";
+            fileSimulatedOutputSequence << "x" << std::to_string(i) << isComma;
+        }
+        fileSimulatedOutputSequence << std::endl;
+        fileSimulatedOutputSequence << transposedOutputSequence.format(CSVFormat);
         fileSimulatedOutputSequence.close();
     }
  
