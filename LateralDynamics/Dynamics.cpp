@@ -8,7 +8,7 @@
 
 #include "Dynamics.hpp"
 
-void Dynamics::bicycleKinematics(Vehicle* car,double dt){
+void Dynamics::bicycleKinematics(Vehicle* car){
     //Bicycle Kinematics for Centre of Vehicle
     //std::cout << "Bicycle Kinematics Function" << std::endl;
     double lf = car -> lf;
@@ -26,8 +26,44 @@ void Dynamics::bicycleKinematics(Vehicle* car,double dt){
     //std::cout << car -> δf << std::endl;
     //car -> v = sqrt(pow(Vx,2) + pow(Vy,2));
     car -> v = Vx + Vy;
+    double dt = 0.04;
     //car -> ψ = std::fmod((car -> ψ + dψ * dt),(2*M_PI)); //Keep within 360 degrees
     car -> ψ = car -> ψ + dψ * dt;
+
+    /*
+     State Space Model=
+     A[[x] [y] [ψ]] + BU, where A is Jacobian Matrix and B is
+     Output model=[1 1 1 1]x + Du
+     */
+    SimulateSystem* du = new SimulateSystem(); //create state-space model first
+    
+    //Velocity and Steering Angle input
+    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string>{"ego_vel_mts_sec","ego_yaw_rad"}); // 2xTimesamples
+    
+    MatrixXd x0;x0.resize(3,1);x0.setZero(); //initial values set to 0, 3x1 Matrix
+    MatrixXd A {{1,0,0},{0,1,0},{0,0,1}}; //Identity Matrix, 4x4 Matrix
+    MatrixXd B {{cos(ψ) * dt,0},{sin(ψ) * dt,0},{0,dt}}; // 3x2 Matrix
+    MatrixXd C;C.resize(3,3);C.setOnes(); // 3x3 Matrix
+    MatrixXd D;D.resize(3,2);D.setZero(); // 4x2 Matrix
+    //D Matrix will associate input coefficients
+    D(0,0) = 1;
+    D(2,1) = 1;
+    du -> setMatrices(A, B, C, D, x0, inputSequence);
+    //du -> modelResize(); //Resizing method if setMatrices was not used
+    //du -> printSimulationParams();
+    /*
+     //Preview Input Sequence
+    for(int i =0 ; i < 2; ++i){
+        for(int j =0; j < 25; ++j){
+            std::cout << inputSequence(i,j) << ",";
+        }
+        std::cout <<"\n" <<std::string(35,'/')<< std::endl;
+    }
+     */
+    
+    du -> runSimulation();
+
+    du -> saveData("AKinematics.csv", "BKinematics.csv", "CKinematics.csv", "DKinematics.csv", "x0Kinematics.csv", "inputSequenceKinematics.csv", "simulatedStateSequenceKinematics.csv", "simulatedOutputSequenceKinematics.csv");
     //car -> v = car -> ψ >= M_PI/2 &&  car -> ψ <= 3*M_PI/2 ? -car -> v : car->v; //Giving Velocity its direction based on the heading angle
 }
 //4-Wheeler
@@ -43,7 +79,9 @@ void Dynamics::bicycleDynamics(Vehicle* car){
     //double δ = sqrt((δr - δf)*L/lw);
     
     //Assuming front angle tire is significantly larger than rear wheel angle difference,
-
+    /*
+     We also need to take into account of inputs such as steering and velocity.
+     */
     double Vx = car -> v * cos(θVf); //Assuming front steering
     double Vy = car -> v * sin(θVf);
     
