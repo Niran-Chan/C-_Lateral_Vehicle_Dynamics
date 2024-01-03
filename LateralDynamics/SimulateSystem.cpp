@@ -21,7 +21,7 @@ SimulateSystem::SimulateSystem() //Default Constructor
     inputSequence.resize(1, 1); inputSequence.setZero();
     simulatedStateSequence.resize(1, 1); simulatedStateSequence.setZero();
     simulatedOutputSequence.resize(1, 1); simulatedOutputSequence.setZero();
-    timeRowVector.resize(1, 1); timeRowVector.setZero(); //step used for each iteration
+    timeRowVector.resize(1, 1); timeRowVector.setZero(); //Vector contatining frame of iteration
 }
  
 SimulateSystem::SimulateSystem(MatrixXd Amatrix, MatrixXd Bmatrix, MatrixXd Cmatrix,MatrixXd Dmatrix, MatrixXd initialState, MatrixXd inputSequenceMatrix)
@@ -170,18 +170,18 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
     std::ofstream fileSimulatedStateSequence(FILEPATH + simulatedStateSequenceFile);
     if (fileSimulatedStateSequence.is_open())
     {
-        fileSimulatedStateSequence << simulatedStateSequence.format(CSVFormat);
+        fileSimulatedStateSequence << simulatedStateSequence.transpose().format(CSVFormat);
         fileSimulatedStateSequence.close();
     }
  
     std::ofstream fileSimulatedOutputSequence(FILEPATH + simulatedOutputSequenceFile);
     if (fileSimulatedOutputSequence.is_open())
     {
-        fileSimulatedOutputSequence << simulatedOutputSequence.format(CSVFormat);
+        fileSimulatedOutputSequence << simulatedOutputSequence.transpose().format(CSVFormat);
         fileSimulatedOutputSequence.close();
     }
  
- 
+    std::cout << "[+] Data Saved into Files: " << FILEPATH << std::endl;
  
 }
  
@@ -207,7 +207,7 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
     
     //To make it selective, we need to take local column values as well
     std::vector<double> matrixEntries;
- 
+
     // in this object we store the data from the matrix
     std::ifstream matrixDataFile(fileToOpen);
  
@@ -222,9 +222,9 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
     int ncols =0; //number of cols processed
     int validCols = 0; //number of cols that are valid and included
     int localCols = 0; //current local col
-    std::vector<int> colsRequired; //If specific headers are required, the ignore every other column
-    int ptrHeader =0 ;
     
+    std::unordered_map<std::string,std::vector<double>> headerMap;
+    std::unordered_map<double,std::string> colMap;
     
     while (std::getline(matrixDataFile, matrixRowString)) // here we read a row by row of matrixDataFile and store every line into the string variable matrixRowString
     {
@@ -233,49 +233,44 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
         while (std::getline(matrixRowStringStream, matrixEntry,',')) // here we read pieces of the stream matrixRowStringStream until every comma, and store the resulting character into the matrixEntry
         {
             
-            if(headers.size()!=0){ //Given that we have specific headers
-                if(matrixRowNumber == 0){ //Find out which cols are required
+           
+                if(matrixRowNumber == 0) //Initialise Header Map first
+                {
                    // std::cout << "Matrix Entry Value : " << matrixEntry << std::endl;
-                    for(auto& header:headers){
-                        if(header == matrixEntry)
-                        {
-                            colsRequired.push_back(ncols);
-                        }
-                    }
-                    std::sort(colsRequired.begin(),colsRequired.end()); //Sort to use pointer method
+                    headerMap[matrixEntry] = {};
+                    colMap[localCols] = matrixEntry; //Key: Column Number, Value: Header name
                 }
-                else if (colsRequired[ptrHeader] == localCols){ //using pointers to efficiently cross check which column is required
-                    matrixEntries.push_back(std::stod(matrixEntry));
-                    ptrHeader++;
-                    ptrHeader %= headers.size();
-                    validCols++;
-                   // std::cout << "Pushing " << matrixEntry << std::endl;
-                }
-            }
+        
             else{
-                if(headers.size()!= 0 && colsRequired.size() == 0){
-                    //Raise Exception that No valid header value was provided
-                    std::cout << "WARNING: NO VALID HEADER WAS INPUTTED. INPUT SEQUENCE IS INVALID" << std::endl;
+                std::string currHeader = colMap[localCols];
+                headerMap[currHeader].push_back(std::stod(matrixEntry)); //push back column value
+               
                 }
-                if(matrixRowNumber != 0){ //Skip first row
-                    matrixEntries.push_back(std::stod(matrixEntry)); //here we convert the string to double and fill in the row vector storing all the matrix entries
-                }
-            }
             ncols ++;
             localCols++;
             }
         matrixRowNumber++; //update the column numbers
     }
+
+    // here we conver the vector variable into the matrix and return the resulting object,
+    // note that matrixEntries.data() is the pointer to the first memory location at which the entries of the vector matrixEntries are stored;
+    
+    for(auto &header : headers){
+        std::string result = headerMap.find(header)!=headerMap.end() ? "yes" : "no";
+        std::cout << "Existence of header " << header << " : "<<result  << std::endl;
+        for(auto val : headerMap[header]){
+            matrixEntries.push_back(val);
+            validCols++;
+        }
+    }
     std::cout << "Number of rows: " << headers.size() << std::endl;
     std::cout << "Mumber of Cols processed: " << ncols << std::endl;
     std::cout << "Number of valid cols: " << validCols << std::endl;
     std::cout << "Stride/step for array memory management : " << matrixEntries.size() / validCols << std::endl;
-    // here we conver the vector variable into the matrix and return the resulting object,
-    // note that matrixEntries.data() is the pointer to the first memory location at which the entries of the vector matrixEntries are stored;
     std::cout<< "Size of output array: " << matrixEntries.size() << std::endl;
     
     //Access contiguous data in array as column data,Change to colmajor from RowMajor to transpose
-    return Map<Matrix<double, Dynamic, Dynamic, ColMajor>> (matrixEntries.data(),headers.size(),validCols);
+    return Map<Matrix<double, Dynamic, Dynamic, RowMajor>> (matrixEntries.data(),headers.size(),validCols);
     
     //Change Stride denominator to matrixRosNumber if matrix not transposed
     //Stride length if cols not specified: matrixEntries.size() / validCols
