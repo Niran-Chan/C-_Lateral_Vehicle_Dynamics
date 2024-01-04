@@ -231,8 +231,8 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
  
     // this variable is used to track the number of rows
     int matrixRowNumber = 0;
-    int ncols =0; //number of cols processed
-    int validCols = 0; //number of cols that are valid and included
+    int nElems =0; //number of elements processed
+    int validElems = 0; //number of elements that are valid and included
     int localCols = 0; //current local col
     
     std::unordered_map<std::string,std::vector<double>> headerMap;
@@ -258,7 +258,7 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
                 headerMap[currHeader].push_back(std::stod(matrixEntry)); //push back column value
                
                 }
-            ncols ++;
+            nElems ++;
             localCols++;
             }
         matrixRowNumber++; //update the column numbers
@@ -269,20 +269,20 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
     
     for(auto &header : headers){
         std::string result = headerMap.find(header)!=headerMap.end() ? "yes" : "no";
-        std::cout << "Existence of header " << header << " : "<<result  << std::endl;
+        std::cout << "Existence of header " << header << " : "<< result  << std::endl;
         for(auto val : headerMap[header]){
             matrixEntries.push_back(val);
-            validCols++;
+            validElems++;
         }
     }
     std::cout << "Number of rows: " << headers.size() << std::endl;
-    std::cout << "Mumber of Cols processed: " << ncols << std::endl;
-    std::cout << "Number of valid cols: " << validCols << std::endl;
-    std::cout << "Stride/step for array memory management : " << matrixEntries.size() / validCols << std::endl;
+    std::cout << "Mumber of elements processed: " << nElems << std::endl;
+    std::cout << "Number of valid elements: " << validElems << std::endl;
+    std::cout << "Stride/step for array memory management : " << matrixEntries.size() / validElems << std::endl;
     std::cout<< "Size of output array: " << matrixEntries.size() << std::endl;
     
     //Access contiguous data in array as column data,Change to colmajor from RowMajor to transpose
-    return Map<Matrix<double, Dynamic, Dynamic, RowMajor>> (matrixEntries.data(),headers.size(),validCols);
+    return Map<Matrix<double, Dynamic, Dynamic, RowMajor>> (matrixEntries.data(),headers.size(),validElems/headers.size());
     
     //Change Stride denominator to matrixRosNumber if matrix not transposed
     //Stride length if cols not specified: matrixEntries.size() / validCols
