@@ -38,17 +38,71 @@ void Dynamics::bicycleKinematics(Vehicle* car){
     SimulateSystem* du = new SimulateSystem(); //create state-space model first
     
     //Velocity and Steering Angle input
-    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string>{"ego_vel_mts_sec","ego_yaw_rad"}); // 2xTimesamples
+    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string>{"ego_vel_mts_sec","ego_yaw_r_rad_sec"}); // 2xTimesamples
     
     MatrixXd x0;x0.resize(3,1);x0.setZero(); //initial values set to 0, 3x1 Matrix
-    MatrixXd A {{1,0,0},{0,1,0},{0,0,1}}; //Identity Matrix, 4x4 Matrix
-    MatrixXd B {{cos(ψ) * dt,0},{sin(ψ) * dt,0},{0,dt}}; // 3x2 Matrix
-    MatrixXd C;C.resize(3,3);C.setOnes(); // 3x3 Matrix
+    x0(0,0) = -324.429047; //X
+    x0(1,0) = 58.0676765;   //Y
+    x0(2,0) = -2.66446209;  //ψ
+    
+    MatrixXd A {{1,0,0},{0,1,0},{0,0,1}}; //Identity Matrix, 4x4
+    
+  
+    
+    MatrixXd C {{1,0,0},{0,1,0},{0,0,1}}; // 3x3 Matrix
     MatrixXd D;D.resize(3,2);D.setZero(); // 4x2 Matrix
-    //D Matrix will associate input coefficients
-    D(0,0) = 1;
-    D(2,1) = 1;
-    du -> setMatrices(A, B, C, D, x0, inputSequence);
+    
+    //du -> setMatrices(A, B, C, D, x0, inputSequence);
+    
+    
+    // TEST WITHOUT SIMULATION CLASS
+    
+    int r = C.rows();
+    int n = A.rows();
+    int timeSamples =inputSequence.cols();
+    MatrixXd simulatedOutputSequence;simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();
+    
+    MatrixXd simulatedStateSequence;simulatedStateSequence.resize(n, timeSamples); simulatedStateSequence.setZero();
+    
+
+    
+    for (int j = 0; j < timeSamples; j++)
+    {
+        if(j!=0) ψ = simulatedStateSequence.col(j-1)[2];
+        MatrixXd B {{cos(ψ) * dt,0},{sin(ψ) * dt,0},{0,dt}}; // 3x2 Matrix ERROR IN LOGIC: NEED TAKE YAW RATE DURING SIMULATION TIME
+        
+        if (j == 0)
+        {
+            //x0.col(j) can work if testing various different initial conditions
+            
+            simulatedStateSequence.col(j) = x0; //Equate current, there is an assertion error here on size
+            simulatedOutputSequence.col(j) = C * x0 ;
+            //D * inputSequence; //Time Invariant system
+            
+        }
+        else
+        {
+            simulatedStateSequence.col(j) = A * simulatedStateSequence.col(j - 1) + B * inputSequence.col(j - 1);
+            simulatedOutputSequence.col(j) = C * simulatedStateSequence.col(j) + D * inputSequence.col(j) ;
+            
+        }
+    }
+    const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+    const std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/";
+    
+    std::ofstream fileSimulatedStateSequence(FILEPATH + "simulatedStateSequenceKinematicsWithoutClass.csv");
+    if (fileSimulatedStateSequence.is_open())
+    {
+        auto transposedStateSequence =simulatedStateSequence.transpose();
+        for(int i =1; i < transposedStateSequence.cols() + 1; ++i){
+           std::string isComma = i == transposedStateSequence.cols() ? "" : ",";
+            fileSimulatedStateSequence << "x" << std::to_string(i) << isComma;
+        }
+        fileSimulatedStateSequence << std::endl;
+        fileSimulatedStateSequence << transposedStateSequence.format(CSVFormat);
+        fileSimulatedStateSequence.close();
+    }
+    
     //du -> modelResize(); //Resizing method if setMatrices was not used
     //du -> printSimulationParams();
     /*
@@ -61,10 +115,10 @@ void Dynamics::bicycleKinematics(Vehicle* car){
     }
      */
     
-    du -> runSimulation();
+    //du -> runSimulation();
 
-    du -> saveData("AKinematics.csv", "BKinematics.csv", "CKinematics.csv", "DKinematics.csv", "x0Kinematics.csv", "inputSequenceKinematics.csv", "simulatedStateSequenceKinematics.csv", "simulatedOutputSequenceKinematics.csv");
-    //car -> v = car -> ψ >= M_PI/2 &&  car -> ψ <= 3*M_PI/2 ? -car -> v : car->v; //Giving Velocity its direction based on the heading angle
+    //du -> saveData("AKinematics.csv", "BKinematics.csv", "CKinematics.csv", "DKinematics.csv", "x0Kinematics.csv", "inputSequenceKinematics.csv", "simulatedStateSequenceKinematics.csv", "simulatedOutputSequenceKinematics.csv");
+
 }
 //4-Wheeler
 void Dynamics::bicycleDynamics(Vehicle* car){

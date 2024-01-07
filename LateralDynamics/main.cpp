@@ -28,8 +28,8 @@ int main(int argc, const char * argv[]) {
 
     std::vector<std::vector<double>> vecToCsv;
     //Mention timesamples later
-    Dynamics::bicycleDynamics(car); //Evaluate Dynamics for Car
-    
+    //Dynamics::bicycleDynamics(car); //Evaluate Dynamics for Car
+    Dynamics::bicycleKinematics(car);
     //Bicycle Kinematics
     /*
     while(t<10){
