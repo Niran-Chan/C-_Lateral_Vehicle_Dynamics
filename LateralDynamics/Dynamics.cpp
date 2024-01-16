@@ -35,6 +35,7 @@ void Dynamics::bicycleKinematics(Vehicle* car){
      A[[x] [y] [ψ]] + BU, where A is Jacobian Matrix and B is
      Output model=[1 1 1 1]x + Du
      */
+ 
     SimulateSystem* du = new SimulateSystem(); //create state-space model first
     
     //Velocity and Steering Angle input
@@ -186,6 +187,17 @@ void Dynamics::bicycleDynamics(Vehicle* car){
     }
     car -> du = du;
     */
+}
+std::vector<double> Dynamics::AckermannModel(Vehicle* car){
+    //Front wheel calculation
+    double δf = car -> δf;
+    double lw = car -> lw;
+    double L = car -> L;
+    double r = L/sinf(δf);
+    double δi = atanl(L/(r-lw/2));
+    double δo = atanl(L/(r+lw/2));
+    double ackermannPercent = (δi - δo)/δi * 100;
+    return std::vector<double> {δi,δo,ackermannPercent};
 }
 void Dynamics::test(){
     std::cout<<"From header file" << std::endl;
