@@ -199,8 +199,36 @@ std::vector<double> Dynamics::AckermannModel(Vehicle* car){
     double ackermannPercent = (δi - δo)/δi * 100;
     return std::vector<double> {δi,δo,ackermannPercent};
 }
+double Dynamics::PacejkaTireModel(double α){
+    /*
+     Estimates
+     Stiffness Factor (B):
+         Typical Range: 10 to 1000
+         Starting Point: 100
+
+     Shape Factor (C):
+         Typical Range: 1 to 3
+         Starting Point: 1.5
+
+     Peak Lateral or Longitudinal Force (D):
+         Typical Range: Varies widely based on the units used for force (e.g., N, kN, lb)
+         Starting Point: Depends on the specific tire and testing conditions
+
+     Curvature Factor (E):
+         Typical Range: 0.1 to 1
+         Starting Point: 0.1
+     */
+    double B = 100;
+    double C = 1.5;
+    double D = 15000;
+    double E = 0.1;
+    
+    double Fy = D * sin(C * atanl(B * α - E * (B * α - atanl(B * α))));
+    return Fy;
+    //Fx=D⋅sin⁡(C⋅arctan⁡(B⋅κ−E⋅(B⋅κ−arctan⁡(B⋅κ))))Fx​=D⋅sin(C⋅arctan(B⋅κ−E⋅(B⋅κ−arctan(B⋅κ)))) //longitudinal force
+}
 void Dynamics::test(){
     std::cout<<"From header file" << std::endl;
-
+    
 }
 

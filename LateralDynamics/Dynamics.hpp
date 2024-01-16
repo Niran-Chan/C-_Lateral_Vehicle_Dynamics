@@ -34,5 +34,12 @@ void bicycleDynamics(Vehicle* car);
  \return vector containing information in the following order: δi,δo,ackermann percent
  */
 std::vector<double> AckermannModel(Vehicle* car);
+
+/*!
+ Pacejka Tire Model for determining lateral forces on tire
+ \param α slip angle
+ \return Lateral Force Fy
+ */
+double PacejkaTireModel(double α );
 }
 #endif /* Dynamics_hpp */
