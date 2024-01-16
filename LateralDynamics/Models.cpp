@@ -6,9 +6,9 @@
 //
 // Use this file for Dynamic Model Functions
 
-#include "Dynamics.hpp"
+#include "Models.hpp"
 
-void Dynamics::bicycleKinematics(Vehicle* car){
+void Models::bicycleKinematics(Vehicle* car){
     //Bicycle Kinematics for Centre of Vehicle
     //std::cout << "Bicycle Kinematics Function" << std::endl;
     double lf = car -> lf;
@@ -122,7 +122,7 @@ void Dynamics::bicycleKinematics(Vehicle* car){
 
 }
 //4-Wheeler
-void Dynamics::bicycleDynamics(Vehicle* car){
+void Models::bicycleDynamics(Vehicle* car){
     double lf = car -> lf;
     double lr = car -> lr;
     double m = car -> m;
@@ -188,7 +188,7 @@ void Dynamics::bicycleDynamics(Vehicle* car){
     car -> du = du;
     */
 }
-std::vector<double> Dynamics::AckermannModel(Vehicle* car){
+std::vector<double> Models::ackermannModel(Vehicle* car){
     //Front wheel calculation
     double δf = car -> δf;
     double lw = car -> lw;
@@ -199,7 +199,7 @@ std::vector<double> Dynamics::AckermannModel(Vehicle* car){
     double ackermannPercent = (δi - δo)/δi * 100;
     return std::vector<double> {δi,δo,ackermannPercent};
 }
-double Dynamics::PacejkaTireModel(double α){
+double Models::pacejkaTireModel(double α){
     /*
      Estimates
      Stiffness Factor (B):
@@ -227,7 +227,7 @@ double Dynamics::PacejkaTireModel(double α){
     return Fy;
     //Fx=D⋅sin⁡(C⋅arctan⁡(B⋅κ−E⋅(B⋅κ−arctan⁡(B⋅κ))))Fx​=D⋅sin(C⋅arctan(B⋅κ−E⋅(B⋅κ−arctan(B⋅κ)))) //longitudinal force
 }
-void Dynamics::test(){
+void Models::test(){
     std::cout<<"From header file" << std::endl;
     
 }

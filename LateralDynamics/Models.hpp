@@ -5,8 +5,8 @@
 //  Created by Niranjan Gopinath on 17/10/23.
 //
 
-#ifndef Dynamics_hpp
-#define Dynamics_hpp
+#ifndef Models_hpp
+#define Models_hpp
 
 #include <stdio.h>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "Eigen/Dense"
 
 
-namespace Dynamics{
+namespace Models{
 /*!Kinematics Model of 2 wheeler.
  Sufficient for low speed models.
  \param car Pointer to Vehicle Class Instance
@@ -33,13 +33,13 @@ void bicycleDynamics(Vehicle* car);
  \param car Pointer to Vehicle Class Instance
  \return vector containing information in the following order: δi,δo,ackermann percent
  */
-std::vector<double> AckermannModel(Vehicle* car);
+std::vector<double> ackermannModel(Vehicle* car);
 
 /*!
  Pacejka Tire Model for determining lateral forces on tire
  \param α slip angle
  \return Lateral Force Fy
  */
-double PacejkaTireModel(double α );
+double pacejkaTireModel(double α );
 }
 #endif /* Dynamics_hpp */

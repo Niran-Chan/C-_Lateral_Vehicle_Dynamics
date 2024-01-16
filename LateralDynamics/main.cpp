@@ -10,7 +10,7 @@
 #include <string>
 
 //Header Files
-#include "Dynamics.hpp"
+#include "Models.hpp"
 #include "Vehicle.hpp"
 #include "HelperFunctions.hpp"
 #include "SimulateSystem.hpp"
@@ -29,7 +29,7 @@ int main(int argc, const char * argv[]) {
     std::vector<std::vector<double>> vecToCsv;
     //Mention timesamples later
     //Dynamics::bicycleDynamics(car); //Evaluate Dynamics for Car
-    Dynamics::bicycleKinematics(car);
+    Models::bicycleKinematics(car);
     //Bicycle Kinematics
     /*
     while(t<10){
