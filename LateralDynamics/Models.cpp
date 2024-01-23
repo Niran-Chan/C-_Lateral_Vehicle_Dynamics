@@ -11,24 +11,25 @@
 void Models::bicycleKinematics(Vehicle* car){
     //Bicycle Kinematics for Centre of Vehicle
     //std::cout << "Bicycle Kinematics Function" << std::endl;
-    double lf = car -> lf;
-    double lr = car -> lr;
+    //double lf = car -> lf;
+    //double lr = car -> lr;
     double v = car ->v;
     double ψ = car -> ψ;
     double δf = car -> δf;
+    double δf_max = 30.0/180.0 * M_PI; //Max angle of Vehicle
     double δr = car -> δr;
-    
-    double L = lf + lr;
-    double β = atan((lr * tan(δf) + lf * tan(δr)) / L); //Slip Angle (Difference between Heading Direction and Current Vehicle Direction, radians)
-    double Vx = v * cos(ψ + β); //Change in X Direction wrt x axis
-    double Vy = v * sin(ψ + β); //Change in Y Direction wrt y axis
-    double dψ = v * cos(β) * (tan(δf) - tan(δr))/L ; //Change in Heading Angle
+    double lw = car -> lw;
+    double L = car -> L;
+   // double β = atan((lr * tan(δf) + lf * tan(δr)) / L); //Slip Angle (Difference between Heading Direction and Current Vehicle Direction, radians)
+   // double Vx = v * cos(ψ + β); //Change in X Direction wrt x axis
+   // double Vy = v * sin(ψ + β); //Change in Y Direction wrt y axis
+   // double dψ = v * cos(β) * (tan(δf) - tan(δr))/L ; //Change in Heading Angle
     //std::cout << car -> δf << std::endl;
     //car -> v = sqrt(pow(Vx,2) + pow(Vy,2));
-    car -> v = Vx + Vy;
+   // car -> v = Vx + Vy;
     double dt = 0.04;
     //car -> ψ = std::fmod((car -> ψ + dψ * dt),(2*M_PI)); //Keep within 360 degrees
-    car -> ψ = car -> ψ + dψ * dt;
+    //car -> ψ = car -> ψ + dψ * dt;
 
     /*
      State Space Model=
@@ -39,24 +40,53 @@ void Models::bicycleKinematics(Vehicle* car){
     SimulateSystem* du = new SimulateSystem(); //create state-space model first
     
     //Velocity and Steering Angle input
-    auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string>{"ego_vel_mts_sec","ego_yaw_r_rad_sec"}); // 2xTimesamples
+   // auto inputSequence = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string>{"ego_vel_mts_sec","ego_yaw_r_rad_sec"}); // 2xTimesamples
+    //Input is Velocity and Steering
+    auto inputSequenceBR = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string>{"ego_vel_mts_sec","steer_fdback_percent"}); // inputSequence before resizing
+    MatrixXd inputSequence;inputSequence.resize(3,inputSequenceBR.cols());
     
+    /*Convert steering_feedback data to yawRate_rad/s, Iterate through steering data and
+        yaw_rate = V/wheelbase * tan(steering_angle)
+     */
+    δf = 0;
+    double dψ = 0;
+    for(int i =0; i < inputSequence.cols();++i)
+    {
+     //Replace Steering angle with Yaw Rate instead
+    // Convert incoming velocity to repective X and Y components
+        
+        double V = inputSequenceBR.col(i)[0]; //Velocity
+        double steerFeedbackPercent= inputSequenceBR.col(i)[1]; //Steering Feedback Percent
+        
+        δf = steerFeedbackPercent/100.0 * δf_max; //Steering Angle
+        dψ = V/lw * tan(δf); //Steering Angle -> Yaw Rate, Kinematic Interpretation
+        
+        inputSequence.col(i)[0] = V * sin(dψ); //Vx
+        inputSequence.col(i)[1] = V * cos(dψ); //Vy
+        inputSequence.col(i)[2] = dψ; //Yaw Rate
+        if(i < 50){
+            std::cout <<"Row : " << i + 1 << "\tCurrent Steering Angle: " << δf << "\tYaw Rate: "<<inputSequence.col(i)[1] << std::endl;
+        }
+    }
     MatrixXd x0;x0.resize(3,1);x0.setZero(); //initial values set to 0, 3x1 Matrix
-    x0(0,0) = -324.429047; //X
-    x0(1,0) = 58.0676765;   //Y
-    x0(2,0) = -2.66446209;  //ψ
-    
+   x0(0,0) = -324.429047; //X
+   x0(1,0) = 58.0676765;   //Y
+   x0(2,0) = -2.66446209;  //ψ
+
     MatrixXd A {{1,0,0},{0,1,0},{0,0,1}}; //Identity Matrix, 4x4
-    
-  
-    
+    MatrixXd B{{dt,0,0},{0,dt,0},{0,0,dt}}; // 3x3
     MatrixXd C {{1,0,0},{0,1,0},{0,0,1}}; // 3x3 Matrix
-    MatrixXd D;D.resize(3,2);D.setZero(); // 4x2 Matrix
+    MatrixXd D;D.resize(3,3);D.setZero(); // 3x3 Matrix
     
-    //du -> setMatrices(A, B, C, D, x0, inputSequence);
+    du -> setMatrices(A, B, C, D, x0, inputSequence);
+    du -> printSimulationParams();
+    du -> runSimulation();
+
+    du -> saveData("AKinematics.csv", "BKinematics.csv", "CKinematics.csv", "DKinematics.csv", "x0Kinematics.csv", "inputSequenceKinematics.csv", "simulatedStateSequenceKinematics.csv", "simulatedOutputSequenceKinematics.csv");
     
     
-    // TEST WITHOUT SIMULATION CLASS
+    // TEST WITHOUT SIMULATION CLASS WORKING
+    /*
     
     int r = C.rows();
     int n = A.rows();
@@ -103,22 +133,9 @@ void Models::bicycleKinematics(Vehicle* car){
         fileSimulatedStateSequence << transposedStateSequence.format(CSVFormat);
         fileSimulatedStateSequence.close();
     }
+    */
     
     //du -> modelResize(); //Resizing method if setMatrices was not used
-    //du -> printSimulationParams();
-    /*
-     //Preview Input Sequence
-    for(int i =0 ; i < 2; ++i){
-        for(int j =0; j < 25; ++j){
-            std::cout << inputSequence(i,j) << ",";
-        }
-        std::cout <<"\n" <<std::string(35,'/')<< std::endl;
-    }
-     */
-    
-    //du -> runSimulation();
-
-    //du -> saveData("AKinematics.csv", "BKinematics.csv", "CKinematics.csv", "DKinematics.csv", "x0Kinematics.csv", "inputSequenceKinematics.csv", "simulatedStateSequenceKinematics.csv", "simulatedOutputSequenceKinematics.csv");
 
 }
 //4-Wheeler
@@ -175,6 +192,7 @@ void Models::bicycleDynamics(Vehicle* car){
     du -> printSimulationParams();
     du -> runSimulation();
     du -> saveData("A.csv","B.csv","C.csv","D.csv","x0.csv", "inputSequenceFile.csv", "simulatedStateSequence.csv", "simulatedOutputSequenceFile.csv");
+    
     /*
     //Final equation is a + b
     if(du.size() == 2){
@@ -190,12 +208,22 @@ void Models::bicycleDynamics(Vehicle* car){
 }
 std::vector<double> Models::ackermannModel(Vehicle* car){
     //Front wheel calculation
+    //Required to convert to state space model
+    
+    //input
     double δf = car -> δf;
+    
+    //params
     double lw = car -> lw;
     double L = car -> L;
+    
+    MatrixXd A  {{}};
+    //output
     double r = L/sinf(δf);
     double δi = atanl(L/(r-lw/2));
     double δo = atanl(L/(r+lw/2));
+    
+    
     double ackermannPercent = (δi - δo)/δi * 100;
     return std::vector<double> {δi,δo,ackermannPercent};
 }
@@ -231,4 +259,7 @@ void Models::test(){
     std::cout<<"From header file" << std::endl;
     
 }
+
+//make steering rate
+//Approximate a model for the Pacejka Tire Model
 
