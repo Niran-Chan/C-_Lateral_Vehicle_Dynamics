@@ -23,7 +23,6 @@ using namespace Eigen;
  
 // MatrixXd is an Eigen typdef for Matrix<double, Dynamic, Dynamic>
  
- 
 class SimulateSystem {
 public:
      
@@ -60,7 +59,7 @@ public:
         \param inputSequence Eigen Matrix of input sequence, usually existing as Scalar Input u ( State Space Model = Ax + Bu )
      
      */
-    void setMatrices(MatrixXd A,MatrixXd B,MatrixXd C, MatrixXd D,MatrixXd x0,MatrixXd inputSequence);
+    void setMatrices(MatrixXd& A,MatrixXd& B,MatrixXd& C, MatrixXd& D,MatrixXd& x0,MatrixXd& inputSequence);
     ///<Setter for private variables A, B, C, D,x0, InputSequence and Time Samples. Time Samples is generated from number of columns in inputSequence.
     
     /*!Get values of private variables in SimulatedSystem Class
@@ -106,7 +105,7 @@ public:
     void modelResize();
     
     /*!Start SimulateSystem Class Instance from already stored CSV files
-        \param Afile String File Name of Matrix A
+     \param Afile String File Name of Matrix A
      \param Bfile String File Name of Matrix B
      \param Cfile String File Name of Matrix C
      \param Dfile String File Name of Matrix D
@@ -141,8 +140,7 @@ private:
     int m; ///<Input Dimension
     int n; ///<State Dimension
     int r; ///<Output Dimension
-    int timeSamples; ///<Defined Time of Simulation
-    
+    int timeSamples; ///<Number of Frames in Simulation
     //m - input dimension, n- state dimension, r-output dimension, timeSamples- number of time samples
  
 };

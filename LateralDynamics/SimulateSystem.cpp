@@ -10,6 +10,7 @@
 
 const std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/";
 //Fixed File Path (eventually to relative directories)
+const IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
 SimulateSystem::SimulateSystem() //Default Constructor
 {
@@ -50,7 +51,7 @@ SimulateSystem::~SimulateSystem() //destructor
 //METHODS
 
 
-void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd D,MatrixXd x0,MatrixXd inputSequence){
+void SimulateSystem::setMatrices(MatrixXd& A,MatrixXd& B,MatrixXd& C,MatrixXd& D,MatrixXd& x0,MatrixXd& inputSequence){
     //Private Class Setter
     this -> A = A;
     this -> B = B;
@@ -72,7 +73,6 @@ void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd D,Mat
     {
         timeRowVector(0, i) = i + 1;
     }
-    //std::cout << timeSamples << std::endl;
     std::cout << "[~] Time Samples Set: " << inputSequence.cols() << std::endl;
     std::cout << "[+] Simulation Params Set!" << std::endl;
 }
@@ -94,6 +94,8 @@ std::vector<MatrixXd> SimulateSystem::getMatrices(){
     res.push_back(this -> D);
     res.push_back(this -> x0);
     res.push_back(this -> inputSequence);
+    res.push_back(this -> simulatedStateSequence);
+    res.push_back(this -> simulatedOutputSequence);
     return res;
 }
 void SimulateSystem::printSimulationParams(bool moreParams){
@@ -118,10 +120,10 @@ std::tuple<MatrixXd, MatrixXd, MatrixXd> SimulateSystem::getStateOuputTime()
     std::tuple<MatrixXd, MatrixXd, MatrixXd>   result(simulatedStateSequence, simulatedOutputSequence, timeRowVector);
     return result;
 }
- 
+
 void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string CFile,std::string DFile,std::string x0File, std::string inputSequenceFile, std::string simulatedStateSequenceFile, std::string simulatedOutputSequenceFile) const
 {
-    const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+    //const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
     
     std::ofstream fileA(FILEPATH + AFile);
     if (fileA.is_open())
@@ -163,7 +165,13 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
     std::ofstream fileInputSequence(FILEPATH + inputSequenceFile);
     if (fileInputSequence.is_open())
     {
-        fileInputSequence << inputSequence.format(CSVFormat);
+        auto transposedInputSequence =inputSequence.transpose();
+        for(int i =1; i < transposedInputSequence.cols() + 1; ++i){
+           std::string isComma = i == transposedInputSequence.cols() ? "" : ",";
+            fileInputSequence << "x" << std::to_string(i) << isComma;
+        }
+        fileInputSequence << std::endl;
+        fileInputSequence << transposedInputSequence.format(CSVFormat);
         fileInputSequence.close();
     }
  
@@ -275,11 +283,11 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string
             validElems++;
         }
     }
-    std::cout << "Number of rows: " << headers.size() << std::endl;
-    std::cout << "Mumber of elements processed: " << nElems << std::endl;
-    std::cout << "Number of valid elements: " << validElems << std::endl;
-    std::cout << "Stride/step for array memory management : " << matrixEntries.size() / validElems << std::endl;
-    std::cout<< "Size of output array: " << matrixEntries.size() << std::endl;
+  //  std::cout << "Number of rows: " << headers.size() << std::endl;
+  //  std::cout << "Mumber of elements processed: " << nElems << std::endl;
+  //  std::cout << "Number of valid elements: " << validElems << std::endl;
+  //  std::cout << "Stride/step for array memory management : " << matrixEntries.size() / validElems << std::endl;
+  //  std::cout<< "Size of output array: " << matrixEntries.size() << std::endl;
     
     //Access contiguous data in array as column data,Change to colmajor from RowMajor to transpose
     return Map<Matrix<double, Dynamic, Dynamic, RowMajor>> (matrixEntries.data(),headers.size(),validElems/headers.size());
