@@ -5,76 +5,93 @@
 //  Created by Niranjan Gopinath on 24/10/23.
 //
 
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <string>
-
 #include "HelperFunctions.hpp"
+#include "SimulateSystem.hpp"
 
-//Temporary Method to Store Input Data before converting to CSV
-void HelperFunctions::storeAsVector(std::vector<double> vecIn,std::vector<std::vector<double>>& vecOut)
-{
-    std::vector<double> temp;
-    for(auto &a : vecIn){
-        temp.push_back(a);
-    };
-    vecOut.push_back(temp);
-}
 
-//Basic CSV implementation (Non generic)
-void HelperFunctions::toCsv(std::string fileName,std::vector<std::string> headers,std::vector<std::vector<double>> x){
+//Basic CSV implementation
+void HelperFunctions::toCsv(MatrixXd fileToSave,std::string fileName,std::string filePath){
     
-    //Create header names
-    //Replace your full path for storing files
-    std::string filePath = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/"+fileName;
-    std::cout << "File Location: " << filePath << std::endl;
-    std::ofstream myFile(filePath);
-    if (myFile.is_open())
+    const IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+ 
+    std::ofstream fileStream(filePath + fileName);
+    std::cout << "File Path: " << filePath + fileName << std::endl;
+    if (fileStream.is_open())
     {
-        std::cout << fileName << " is open" << "\n";
+        auto transposedFile=fileToSave.transpose();
+        
+        for(int i =1; i < transposedFile.cols() + 1; ++i){
+           std::string isComma = i == transposedFile.cols() ? "" : ",";
+            fileStream << "x" << std::to_string(i) << isComma;
+        }
+        
+        fileStream << std::endl;
+        fileStream << transposedFile.format(CSVFormat);
+        fileStream.close();
+        std::cout << "[+] Data Saved into file using helper functions: " << filePath << std::endl;
     }
+    else
+        std::cout << "[-] Data unable to be saved : " << filePath << std::endl;
 
-    std::cout << "Writing Files..." << std::endl;
-    
-     for(auto colName: headers){
-         myFile << colName << ",";
-     }
-     myFile << "\n";
-     //Ensure that table sizes are matched
-
-     for(int i =0; i < x.size();++i){
-         for(int j =0; j < x[i].size();++j){
-             if(j == x[i].size() - 1) //Last line no comma
-                 myFile << x[i][j];
-             else
-                 myFile << x[i][j] << ",";
-         }
-     myFile << "\n";
-     }
-     myFile.close();
-    if(!myFile.is_open())
-        std::cout << fileName << " is closed" << std::endl;
+ 
 }
-void HelperFunctions::fromCsv(std::string fileName)
+Eigen::MatrixXd HelperFunctions::fromCsv(std::string fileToOpen,std::vector<std::string> headers)
 {
-    // Read from the text file
-    std::string filePath ="/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/"+fileName;
-    std::ifstream MyReadFile(filePath);
-    std::string myText;
-    // Use a while loop together with the getline() function to read the file line by line
-    while (std::getline (MyReadFile, myText)) {
-      // Output the text from the file
-      std::cout << myText;
-    }
-
-    // Close the file
-    MyReadFile.close();
+        //Same as SimulateSystem Method
+       std::vector<double> matrixEntries;
+       std::ifstream matrixDataFile(fileToOpen);
     
-}
-
-void HelperFunctions::test(){
-    std::cout << "Hello from test " << std::endl;
+       // this variable is used to store the row of the matrix that contains commas
+       std::string matrixRowString;
+    
+       // this variable is used to store the matrix entry;
+       std::string matrixEntry;
+    
+       // this variable is used to track the number of rows
+       int matrixRowNumber = 0;
+       int nElems =0; //number of elements processed
+       int validElems = 0; //number of elements that are valid and included
+       int localCols = 0; //current local col
+       
+       std::unordered_map<std::string,std::vector<double>> headerMap;
+       std::unordered_map<double,std::string> colMap;
+       
+       while (std::getline(matrixDataFile, matrixRowString)) // here we read a row by row of matrixDataFile and store every line into the string variable matrixRowString
+       {
+           std::stringstream matrixRowStringStream(matrixRowString); //convert matrixRowString that is a string to a stream variable.
+           localCols = 0;
+           while (std::getline(matrixRowStringStream, matrixEntry,',')) // here we read pieces of the stream matrixRowStringStream until every comma, and store the resulting character into the matrixEntry
+           {
+               
+              
+                   if(matrixRowNumber == 0) //Initialise Header Map first
+                   {
+                      // std::cout << "Matrix Entry Value : " << matrixEntry << std::endl;
+                       headerMap[matrixEntry] = {};
+                       colMap[localCols] = matrixEntry; //Key: Column Number, Value: Header name
+                   }
+           
+               else{
+                   std::string currHeader = colMap[localCols];
+                   headerMap[currHeader].push_back(std::stod(matrixEntry)); //push back column value
+                  
+                   }
+               nElems ++;
+               localCols++;
+               }
+           matrixRowNumber++; //update the column numbers
+       }
+       
+       for(auto &header : headers){
+           std::string result = headerMap.find(header)!=headerMap.end() ? "yes" : "no";
+           std::cout << "Existence of header " << header << " : "<< result  << std::endl;
+           for(auto val : headerMap[header]){
+               matrixEntries.push_back(val);
+               validElems++;
+           }
+       }
+       return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> (matrixEntries.data(),headers.size(),validElems/headers.size());
+    
 }
 
 
