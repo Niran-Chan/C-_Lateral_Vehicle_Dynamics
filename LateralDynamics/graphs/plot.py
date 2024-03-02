@@ -9,7 +9,7 @@ def flag_detect(args):
     for flag in args:
         if flag == "-h":
             print("Tool to easily plot graphs. Use it in the following format: \npython3 ./plot.py ../its/in/here/simulate.csv <FLAGS> <whichever headers you want to use as x-axis labels>\n")
-            print("FLAGS\n",50 * "-")
+            print("FLAGS\n" + 50 * "-" + "\n")
             print("-h:\t Help")
             print("-n, --norm:\t Normalise Data")
             quit()
@@ -33,7 +33,7 @@ def graphing():
         args = sys.argv[2::]
         flags = flag_detect(args)
         print("FLAGS: ",flags,"\n")
-        cnt_headers = len(sys.argv) - flags[1]
+        cnt_headers = len(sys.argv) - len(flags)
 
         df = pd.read_csv(sys.argv[1],skip_blank_lines=True)
         df=df.astype(float)
@@ -96,7 +96,7 @@ def graphing():
         #plt.show() 
     except Exception as e:
         print("[-] ",e)
-        print("[-] Maybe try running in the following format\ne.g.\tpython3 ./plot.py ../its/in/here/simulate.csv <FLAGS> <whichever headers you want to use as x-axis labels>")
+        print("[-] Maybe try running in the following format\ne.g.\tpython3 plot.py -h")
     
     # State Space,x' = Ax + Bu ((4x4) * (4x1) + (1x1)*(1x1))
     # State output = Cx + Du

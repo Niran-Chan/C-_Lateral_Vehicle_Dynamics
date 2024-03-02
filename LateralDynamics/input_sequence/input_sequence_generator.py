@@ -56,8 +56,8 @@ def general_input(t,dt,file_name,t_start,t_delay,fn,plot=True):
         m+=1
         #print(f)
     f = np.array(f)
-    f = f.reshape(1,m)
-    np.savetxt(file_name,f,delimiter=",")
+    f = f.reshape(m,1)
+    np.savetxt(file_name,f,delimiter=",",header=file_name)
     
     if(plot):
         plt.plot(f)
