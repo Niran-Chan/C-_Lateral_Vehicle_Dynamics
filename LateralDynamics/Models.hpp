@@ -18,11 +18,13 @@ namespace Models{
 /*!Analytic Kinematics Model of 2 wheeler.
  Sufficient for low speed models.
  \param car Pointer to Vehicle Class Instance
- \param x0 initial conditions, {X,Y,Yaw_Angle}, respectively in 3x1 Matrix
- \param inputFilePath File Path for the CSV file
-\param headers Name of headers for Velocity and Steering Percentage Respectively
+ \param V Velocity vector
+ \param ψ Current Yaw Angle
+ \param steerCommandPercent Percentage of Steering done
+ \param steerRatio Actual Steering done of physical steering wheel
+ \return 4x1 Matrix in following format: {dx,dy,dψ,β}
  */
-void bicycleAnalyticKinematics(Vehicle* car,MatrixXd x0,std::string inputFilePath,std::vector<std::string> headers);
+MatrixXd bicycleKinematicsStep(Vehicle* car,double V,double ψ,double steerCommandPercent,double steerRatio,double dt);
 /*!Numerical Kinematics Model of 2 wheeler.
  Sufficient for low speed models
  \param car Pointer to Vehicle Class Instance
@@ -37,26 +39,35 @@ void test();
  The model determines vehicle kinematics first, using the bicycleKinematics Model, followed by using the final tire angle as the input to determine the dynamics of motion.
  
  */
-void bicycleAnalyticSlipDynamics(Vehicle* car);
+void bicycleSlipDynamicsSimulation(Vehicle* car);
+
 /*!Dynamics Model of 2 wheeler
  \param car Pointer to Vehicle Class Instance
- The model determines vehicle kinematics first, using the bicycleKinematics Model, followed by using the final tire angle as the input to determine the dynamics of motion.
+ \param sequence Relevant Matrix Column to be updated in step
+ \param steerCommandPercent Percentage of front wheel steered relative to max steering angle
+ \param Vx Current Longitudinal Velocity of Vehicle
+ \param φ Current Bank angle of Vehicle
+ \param dt timestep
+ \return 4x1 Matrix,du, of the following : {dy,d2y,dψ,d2ψ}
  */
-void bicycleNumericalSlipDynamics(Vehicle* car);
+MatrixXd bicycleSlipDynamicsStep(Vehicle* car,MatrixXd sequence,double steerCommandPercent,double Vx,double φ,double dt);
+
 /*!Ackermann Model implementation. Input: Ackermann Steering Angle, Output: Ackermann Percentage,
  \param car Pointer to Vehicle Class Instance
- \param δf current steering angle
+ \param steerCommandPercent Current percentage of steering
  \param pAck Ackermann Percentage
  \return vector containing information in the following order: δi,δo
  */
-std::vector<double> ackermannModel(Vehicle* car,double δf,double pAck);
+MatrixXd ackermannModel(Vehicle* car,double steerCommandPercent,double pAck);
 
 /*!
  Pacejka Tire Model for determining lateral forces on tire
- \param α slip angle
- \return Lateral Force Fy
+ \param car Pointer to Vehicle Class Instance
+ \param steerCommandPercent percent of maximum steering angle
+ \param ψ current yaw angle
+ \return 2x1 Matrix in the following: {α,Lateral Force Fy}
  */
-double pacejkaTireModel(double α );
+MatrixXd pacejkaTireModel(Vehicle* car,double steerCommandPercent,double ψ);
 /*!
     Vehicle Lateral Dynamics in terms of yaw rate and slip angle
     \param car Pointer to Vehicle Class Instance
@@ -70,11 +81,11 @@ double pacejkaTireModel(double α );
 std::vector<double> sideslipModel(Vehicle* car,double δ,double β,double r,double Vx, double φ);
 }
 /*!
-    Steering Low Pass Filter
-        \param δfcmd Current steering Angle
-        \param δfcmdPrev Previous Steering Angle
-        \param cutoffFreq Frequency cutoff. Higher Frequency Cutoff leads to leaning of smoothing towards upperbound
-        \param dt Timestep
+Steering Low Pass Filter
+    \param δfcmd Current steering Angle
+    \param δfcmdPrev Previous Steering Angle
+    \param cutoffFreq Frequency cutoff. Higher Frequency Cutoff leads to leaning of smoothing towards upperbound
+    \param dt Timestep
  */
 double steeringLowPassFilter(double δfcmd, double δfcmdPrev,double cutoffFreq,double dt);
 
