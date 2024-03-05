@@ -2,7 +2,7 @@
 
 echo "[+] Building Project based on current system"
 cd ./build
-make 
+make VERBOSE=1
 make install
 echo "[+] Done"
 
