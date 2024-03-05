@@ -44,7 +44,7 @@ int main(int argc, const char * argv[]) {
     MatrixXd finalMatrix;finalMatrix.resize(3,timeSamples);finalMatrix.setZero(); //{x,y,ψ} from Relevant Model
     MatrixXd dynamicsResults;dynamicsResults.resize(4,timeSamples);dynamicsResults.setZero(); //{x,y,ψ} from Dynamics Model
     MatrixXd kinematicsResults;kinematicsResults.resize(4,timeSamples);kinematicsResults.setZero(); //{x,y,ψ} from Kinematics Model
-    MatrixXd pacejkaValues;pacejkaValues.resize(2,timeSamples);pacejkaValues.setZero();
+    MatrixXd pacejkaValues;pacejkaValues.resize(3,timeSamples);pacejkaValues.setZero();
     MatrixXd ackermannValues;ackermannValues.resize(2,timeSamples);ackermannValues.setZero();
     finalMatrix(0,0) = x;
     finalMatrix(1,0) = y;
@@ -59,7 +59,7 @@ int main(int argc, const char * argv[]) {
         
         //Kinematics
         if(i == 1)
-            std::cout << "[+] Calculating Kinematics" << std::endl;
+            std::cout << "[+] Bicycle Kinematics Included " << std::endl;
         kinematicsResults.col(i) = Models::bicycleKinematicsStep(car,V,ψ,steerCommandPercent, 1.0, dt);
         
         dx = kinematicsResults(0,i);
@@ -67,10 +67,10 @@ int main(int argc, const char * argv[]) {
         dψ = kinematicsResults(2,i);
         β = kinematicsResults(3,i);
         
-        //Slip Dynamics
+        //Slip Dynamics, Applicable for sufficient enough slip angle
         if(i == 1)
-            std::cout << "[+] Calculating Slip Dynamics" << std::endl;
-        if(V > 10.0)
+            std::cout << "[+] Bicycle Slip Dynamics Included" << std::endl;
+        if(V > 4.0)
             dynamicsResults.col(i)= Models::bicycleSlipDynamicsStep(car,dynamicsResults.col(i-1),steerCommandPercent,V*cos(ψ),0.0,dt);
         else
             dynamicsResults.col(i) = dynamicsResults.col(i-1);
@@ -81,7 +81,7 @@ int main(int argc, const char * argv[]) {
         
         //Pacejka Tire Model
         
-        pacejkaValues.col(i) = Models::pacejkaTireModel(car,steerCommandPercent,ψ); //Slip Angle,Lateral Force Experienced by Vehicle
+        pacejkaValues.col(i) = Models::pacejkaTireModel(car,steerCommandPercent,ψ); //Slip Angle,Lateral Force Experienced by Tires on Vehicle
         
         ψ = ψ + dψ*dt;
         x = x + dx*dt;
