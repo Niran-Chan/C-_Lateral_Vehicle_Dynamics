@@ -10,6 +10,7 @@
 
 const std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/";
 //Fixed File Path (eventually to relative directories)
+const IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
 SimulateSystem::SimulateSystem() //Default Constructor
 {
@@ -21,10 +22,10 @@ SimulateSystem::SimulateSystem() //Default Constructor
     inputSequence.resize(1, 1); inputSequence.setZero();
     simulatedStateSequence.resize(1, 1); simulatedStateSequence.setZero();
     simulatedOutputSequence.resize(1, 1); simulatedOutputSequence.setZero();
-    timeRowVector.resize(1, 1); timeRowVector.setZero(); //step used for each iteration
+    timeRowVector.resize(1, 1); timeRowVector.setZero(); //Vector contatining frame of iteration
 }
  
-SimulateSystem::SimulateSystem(MatrixXd Amatrix, MatrixXd Bmatrix, MatrixXd Cmatrix, MatrixXd initialState, MatrixXd inputSequenceMatrix)
+SimulateSystem::SimulateSystem(MatrixXd Amatrix, MatrixXd Bmatrix, MatrixXd Cmatrix,MatrixXd Dmatrix, MatrixXd initialState, MatrixXd inputSequenceMatrix)
 {
     A = Amatrix; B = Bmatrix; C = Cmatrix; x0 = initialState; inputSequence = inputSequenceMatrix;
     n = A.rows();
@@ -50,11 +51,12 @@ SimulateSystem::~SimulateSystem() //destructor
 //METHODS
 
 
-void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd x0,MatrixXd inputSequence){
+void SimulateSystem::setMatrices(MatrixXd& A,MatrixXd& B,MatrixXd& C,MatrixXd& D,MatrixXd& x0,MatrixXd& inputSequence){
     //Private Class Setter
     this -> A = A;
     this -> B = B;
     this -> C = C;
+    this -> D = D;
     this -> x0 = x0;
     this -> inputSequence = inputSequence;
     this -> n = A.rows();
@@ -71,7 +73,8 @@ void SimulateSystem::setMatrices(MatrixXd A,MatrixXd B,MatrixXd C,MatrixXd x0,Ma
     {
         timeRowVector(0, i) = i + 1;
     }
-    std::cout << timeSamples << std::endl;
+    std::cout << "[~] Time Samples Set: " << inputSequence.cols() << std::endl;
+    std::cout << "[+] Simulation Params Set!" << std::endl;
 }
 std::vector<MatrixXd> SimulateSystem::getMatrices(){
     //Private Class Getter
@@ -88,8 +91,11 @@ std::vector<MatrixXd> SimulateSystem::getMatrices(){
     res.push_back(this -> A);
     res.push_back(this -> B);
     res.push_back(this -> C);
+    res.push_back(this -> D);
     res.push_back(this -> x0);
     res.push_back(this -> inputSequence);
+    res.push_back(this -> simulatedStateSequence);
+    res.push_back(this -> simulatedOutputSequence);
     return res;
 }
 void SimulateSystem::printSimulationParams(bool moreParams){
@@ -100,6 +106,7 @@ void SimulateSystem::printSimulationParams(bool moreParams){
     std::cout << "Matrix A \n" << this -> A<< std::endl;
     std::cout << "Matrix B \n" << this -> B<< std::endl;
     std::cout << "Matrix C \n" << this -> C<< std::endl;
+    std::cout << "Matrix D \n" << this -> D<<std::endl;
     std::cout << "Initial State, x0 \n" << this -> x0<< std::endl;
     if(moreParams) //More Verbose
     {std::cout << "Input Sequence \n" << this -> inputSequence<< std::endl;
@@ -113,10 +120,10 @@ std::tuple<MatrixXd, MatrixXd, MatrixXd> SimulateSystem::getStateOuputTime()
     std::tuple<MatrixXd, MatrixXd, MatrixXd>   result(simulatedStateSequence, simulatedOutputSequence, timeRowVector);
     return result;
 }
- 
-void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string CFile, std::string x0File, std::string inputSequenceFile, std::string simulatedStateSequenceFile, std::string simulatedOutputSequenceFile) const
+
+void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string CFile,std::string DFile,std::string x0File, std::string inputSequenceFile, std::string simulatedStateSequenceFile, std::string simulatedOutputSequenceFile) const
 {
-    const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+    //const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
     
     std::ofstream fileA(FILEPATH + AFile);
     if (fileA.is_open())
@@ -139,7 +146,12 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
         fileC << C.format(CSVFormat);
         fileC.close();
     }
- 
+    std::ofstream fileD(FILEPATH + DFile);
+    if (fileD.is_open())
+    {
+        fileD << D.format(CSVFormat);
+        fileD.close();
+    }
  
  
     std::ofstream fileX0(FILEPATH + x0File);
@@ -153,29 +165,47 @@ void SimulateSystem::saveData(std::string AFile, std::string BFile, std::string 
     std::ofstream fileInputSequence(FILEPATH + inputSequenceFile);
     if (fileInputSequence.is_open())
     {
-        fileInputSequence << inputSequence.format(CSVFormat);
+        auto transposedInputSequence =inputSequence.transpose();
+        for(int i =1; i < transposedInputSequence.cols() + 1; ++i){
+           std::string isComma = i == transposedInputSequence.cols() ? "" : ",";
+            fileInputSequence << "x" << std::to_string(i) << isComma;
+        }
+        fileInputSequence << std::endl;
+        fileInputSequence << transposedInputSequence.format(CSVFormat);
         fileInputSequence.close();
     }
  
     std::ofstream fileSimulatedStateSequence(FILEPATH + simulatedStateSequenceFile);
     if (fileSimulatedStateSequence.is_open())
     {
-        fileSimulatedStateSequence << simulatedStateSequence.format(CSVFormat);
+        auto transposedStateSequence =simulatedStateSequence.transpose();
+        for(int i =1; i < transposedStateSequence.cols() + 1; ++i){
+           std::string isComma = i == transposedStateSequence.cols() ? "" : ",";
+            fileSimulatedStateSequence << "x" << std::to_string(i) << isComma;
+        }
+        fileSimulatedStateSequence << std::endl;
+        fileSimulatedStateSequence << transposedStateSequence.format(CSVFormat);
         fileSimulatedStateSequence.close();
     }
  
     std::ofstream fileSimulatedOutputSequence(FILEPATH + simulatedOutputSequenceFile);
     if (fileSimulatedOutputSequence.is_open())
     {
-        fileSimulatedOutputSequence << simulatedOutputSequence.format(CSVFormat);
+        auto transposedOutputSequence =simulatedOutputSequence.transpose();
+        for(int i =1; i < transposedOutputSequence.cols() + 1; ++i){
+           std::string isComma = i == transposedOutputSequence.cols() ? "" : ",";
+            fileSimulatedOutputSequence << "x" << std::to_string(i) << isComma;
+        }
+        fileSimulatedOutputSequence << std::endl;
+        fileSimulatedOutputSequence << transposedOutputSequence.format(CSVFormat);
         fileSimulatedOutputSequence.close();
     }
  
- 
+    std::cout << "[+] Data Saved into Files: " << FILEPATH << std::endl;
  
 }
  
-MatrixXd SimulateSystem::openData(std::string fileToOpen)
+MatrixXd SimulateSystem::openData(std::string fileToOpen,std::vector<std::string> headers)
 {
  
     // the inspiration for creating this function was drawn from here (I did NOT copy and paste the code)
@@ -187,15 +217,17 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen)
     // d,e,f
     // This function converts input file data into the Eigen matrix format
  
- 
+    
  
     // the matrix entries are stored in this variable row-wise. For example if we have the matrix:
     // M=[a b c
     //    d e f]
     // the entries are stored as matrixEntries=[a,b,c,d,e,f], that is the variable "matrixEntries" is a row vector
     // later on, this vector is mapped into the Eigen matrix format
+    
+    //To make it selective, we need to take local column values as well
     std::vector<double> matrixEntries;
- 
+
     // in this object we store the data from the matrix
     std::ifstream matrixDataFile(fileToOpen);
  
@@ -207,30 +239,85 @@ MatrixXd SimulateSystem::openData(std::string fileToOpen)
  
     // this variable is used to track the number of rows
     int matrixRowNumber = 0;
-    int ncols =0 ;
- 
+    int nElems =0; //number of elements processed
+    int validElems = 0; //number of elements that are valid and included
+    int localCols = 0; //current local col
+    
+    std::unordered_map<std::string,std::vector<double>> headerMap;
+    std::unordered_map<double,std::string> colMap;
+    
     while (std::getline(matrixDataFile, matrixRowString)) // here we read a row by row of matrixDataFile and store every line into the string variable matrixRowString
     {
         std::stringstream matrixRowStringStream(matrixRowString); //convert matrixRowString that is a string to a stream variable.
- 
+        localCols = 0;
         while (std::getline(matrixRowStringStream, matrixEntry,',')) // here we read pieces of the stream matrixRowStringStream until every comma, and store the resulting character into the matrixEntry
         {
-            matrixEntries.push_back(std::stod(matrixEntry));   //here we convert the string to double and fill in the row vector storing all the matrix entries
-            ncols ++;
+            
+           
+                if(matrixRowNumber == 0) //Initialise Header Map first
+                {
+                   // std::cout << "Matrix Entry Value : " << matrixEntry << std::endl;
+                    headerMap[matrixEntry] = {};
+                    colMap[localCols] = matrixEntry; //Key: Column Number, Value: Header name
+                }
+        
+            else{
+                std::string currHeader = colMap[localCols];
+                headerMap[currHeader].push_back(std::stod(matrixEntry)); //push back column value
+               
+                }
+            nElems ++;
+            localCols++;
             }
         matrixRowNumber++; //update the column numbers
     }
-    std::cout << "Number of rows: " << matrixRowNumber << std::endl;
-    std::cout << "Number of cols: " << ncols << std::endl;
+
     // here we conver the vector variable into the matrix and return the resulting object,
     // note that matrixEntries.data() is the pointer to the first memory location at which the entries of the vector matrixEntries are stored;
-    //std::cout <<"Number of columnds found: " <<  matrixRowNumber << std::endl;
-    return Map<Matrix<double, Dynamic, Dynamic, RowMajor>> (matrixEntries.data(), matrixRowNumber, matrixEntries.size() / matrixRowNumber);
+    
+    for(auto &header : headers){
+        std::string result = headerMap.find(header)!=headerMap.end() ? "yes" : "no";
+        std::cout << "Existence of header " << header << " : "<< result  << std::endl;
+        for(auto val : headerMap[header]){
+            matrixEntries.push_back(val);
+            validElems++;
+        }
+    }
+  //  std::cout << "Number of rows: " << headers.size() << std::endl;
+  //  std::cout << "Mumber of elements processed: " << nElems << std::endl;
+  //  std::cout << "Number of valid elements: " << validElems << std::endl;
+  //  std::cout << "Stride/step for array memory management : " << matrixEntries.size() / validElems << std::endl;
+  //  std::cout<< "Size of output array: " << matrixEntries.size() << std::endl;
+    
+    //Access contiguous data in array as column data,Change to colmajor from RowMajor to transpose
+    return Map<Matrix<double, Dynamic, Dynamic, RowMajor>> (matrixEntries.data(),headers.size(),validElems/headers.size());
+    
+    //Change Stride denominator to matrixRosNumber if matrix not transposed
+    //Stride length if cols not specified: matrixEntries.size() / validCols
+}
+
+//Easier method to call for resizing state space and output model
+
+void SimulateSystem::modelResize(){
+    n = A.rows();
+    m = B.cols();
+    r = C.rows();
+    timeSamples = inputSequence.cols();
+
+    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();// C Rows x Time Samples
+    simulatedStateSequence.resize(n, timeSamples);  simulatedStateSequence.setZero();
+    //A rows x Time Samples
+ 
+    timeRowVector.resize(1, timeSamples);
+ 
+    for (int i = 0; i < timeSamples; i++)
+    {
+        timeRowVector(0, i) = i + 1;
+    }
  
 }
  
- 
-void SimulateSystem::openFromFile(std::string Afile, std::string Bfile, std::string Cfile, std::string x0File, std::string inputSequenceFile)
+void SimulateSystem::openFromFile(std::string Afile, std::string Bfile, std::string Cfile,std::string Dfile, std::string x0File, std::string inputSequenceFile)
 {
     // this function acts as a constructor in some way.
     // call this function after a default constructor is being called
@@ -238,6 +325,7 @@ void SimulateSystem::openFromFile(std::string Afile, std::string Bfile, std::str
     A = openData(Afile);
     B = openData(Bfile);
     C = openData(Cfile);
+    D = openData(Dfile);
     x0= openData(x0File);
     inputSequence=openData(inputSequenceFile);
  
@@ -246,8 +334,9 @@ void SimulateSystem::openFromFile(std::string Afile, std::string Bfile, std::str
     r = C.rows();
     timeSamples = inputSequence.cols();
  
-    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();
+    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();// C Rows x Time Samples
     simulatedStateSequence.resize(n, timeSamples);  simulatedStateSequence.setZero();
+    //A rows x Time Samples
  
     timeRowVector.resize(1, timeSamples);
  
@@ -265,13 +354,26 @@ void SimulateSystem::runSimulation()
     {
         if (j == 0)
         {
-            simulatedStateSequence.col(j) = x0; //Equate current
-            simulatedOutputSequence.col(j) = C * x0;
+            //x0.col(j) can work if testing various different initial conditions
+            
+            simulatedStateSequence.col(j) = x0; //Equate current, there is an assertion error here on size
+            simulatedOutputSequence.col(j) = C * x0 ;
+            //D * inputSequence; //Time Invariant system
+            
         }
         else
         {
             simulatedStateSequence.col(j) = A * simulatedStateSequence.col(j - 1) + B * inputSequence.col(j - 1);
-            simulatedOutputSequence.col(j) = C * simulatedStateSequence.col(j);
+           /*
+            std::cout << std::string(35,'-') << std::endl;
+            std::cout <<"Matrix D\n" << D << std::endl;
+            std::cout << "Input sequence at Col " << j << "\n";
+            std::cout << inputSequence.col(j) << std::endl;
+            std::cout << std::string(35,'-') << std::endl;
+           */
+            simulatedOutputSequence.col(j) = C * simulatedStateSequence.col(j) + D * inputSequence.col(j) ;
+            //Assertion Error: D * inputSequence.col(j);
+            
         }
          
     }
