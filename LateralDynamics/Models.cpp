@@ -215,22 +215,37 @@ MatrixXd Models::pacejkaTireModel(Vehicle* car, double steerCommandPercent,doubl
      Curvature Factor (E):
          Typical Range: 0.1 to 1
          Starting Point: 0.1
+     
+     Fx=D⋅sin⁡(C⋅arctan⁡(B⋅κ−E⋅(B⋅κ−arctan⁡(B⋅κ))))Fx​=D⋅sin(C⋅arctan(B⋅κ−E⋅(B⋅κ−arctan(B⋅κ)))) //longitudinal force
      */
-    double δfmax = car -> δfmax;
-    double δf = steerCommandPercent/100.0 * δfmax; //Steering Angle, assuming 1:1 steering ratio
-    double α = δf - ψ;
-    double B = 100;
-    double C = 1.5;
-    double D = 15000;
-    double E = 0.1;
     
+    //Base Parameters
+    double δfmax = car -> δfmax;
+    double lr = car -> lr;
+    double lf = car -> lf;
+    double L = car -> L;
+    double Fz = car -> m * g; //Vertical Load
+    double Fzf = Fz * lr/L; //Vertical Load Front Distribution
+    double Fzr = Fz * lf/L; //Vertical Load Back Distribution
+    
+    double δf = steerCommandPercent/100.0 * δfmax; //Steering Angle, assuming 1:1 steering ratio
+    double α = δf - ψ; //Slip Angle
+    
+    //Calculation Parameters
+    double B = 100; //Stiffness Factor
+    double C = 1.5; //Shape Factor
+    double D = 15000; //Peak Value
+    double E = 0.1; //Curvature Factor
+    
+    //Calculation
     double Fy = D * sin(C * atanl(B * α - E * (B * α - atanl(B * α))));
     
-    MatrixXd results;results.resize(2,1);results.setZero();
-    results(0,0) = Fy;
-    results(1,0) = α;
+    //Return
+    MatrixXd results;results.resize(3,1);results.setZero();
+    results(0,0) = Fy/Fzf;
+    results(1,0) = Fy/Fzr;
+    results(2,0) = α;
     return results;
-    //Fx=D⋅sin⁡(C⋅arctan⁡(B⋅κ−E⋅(B⋅κ−arctan⁡(B⋅κ))))Fx​=D⋅sin(C⋅arctan(B⋅κ−E⋅(B⋅κ−arctan(B⋅κ)))) //longitudinal force
 }
 double steeringLowPassFilter(double δfcmd, double δfcmdPrev,double cutoffFreq,double dt)
 {
