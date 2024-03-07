@@ -12,7 +12,7 @@
 #include <vector>
 #include "Vehicle.hpp"
 #include "Eigen/Dense"
-
+#include "HelperFunctions.hpp"
 
 namespace Models{
 /*!Analytic Kinematics Model of 2 wheeler.
@@ -36,10 +36,10 @@ void bicycleNumericalKinematics(Vehicle* car,MatrixXd x0,std::string inputFilePa
 void test();
 /*!Dynamics Model of 2 wheeler
  \param car Pointer to Vehicle Class Instance
- The model determines vehicle kinematics first, using the bicycleKinematics Model, followed by using the final tire angle as the input to determine the dynamics of motion.
- 
+ \param Vx Model assumes constant longitudinal velocity around turn
+Determine slip dynamics of vehicle around a curve based on its current longitudinal velocity
  */
-void bicycleSlipDynamicsSimulation(Vehicle* car);
+void bicycleSlipDynamicsSimulation(Vehicle* car,MatrixXd inputSequenceSteering,double Vx,double dt,std::string filePath);
 
 /*!Dynamics Model of 2 wheeler
  \param car Pointer to Vehicle Class Instance
@@ -56,18 +56,18 @@ MatrixXd bicycleSlipDynamicsStep(Vehicle* car,MatrixXd sequence,double steerComm
  \param car Pointer to Vehicle Class Instance
  \param steerCommandPercent Current percentage of steering
  \param pAck Ackermann Percentage
- \return vector containing information in the following order: δi,δo
+ \return Column Matrix returned in the following order: δi,δo
  */
-MatrixXd ackermannModel(Vehicle* car,double steerCommandPercent,double pAck);
+MatrixXd ackermannModel(Vehicle* car,double steerCommandPercent,double curvature,double pAck);
 
 /*!
  Pacejka Tire Model for determining lateral forces on tire
  \param car Pointer to Vehicle Class Instance
- \param steerCommandPercent percent of maximum steering angle
+ \param steeringAngles Column Matrix of steering angles of all wheels required
  \param ψ current yaw angle
- \return 2x1 Matrix in the following: {α,Lateral Force Fy}
+ \return Pair of Matrices in the following order: Lateral Force Fy,α. Each row correlates to each row in provided steeringAngles Matrix.
  */
-MatrixXd pacejkaTireModel(Vehicle* car,double steerCommandPercent,double ψ);
+std::pair<MatrixXd,MatrixXd> pacejkaTireModel(Vehicle* car, MatrixXd steeringAngles,double ψ);
 /*!
     Vehicle Lateral Dynamics in terms of yaw rate and slip angle
     \param car Pointer to Vehicle Class Instance
@@ -76,10 +76,10 @@ MatrixXd pacejkaTireModel(Vehicle* car,double steerCommandPercent,double ψ);
     \param r Yaw Rate
     \param Vx current Velocity of Vehicle in x-direction, m/s
     \param φ current slope angle, radians
-    \return vector in the form: {d(slip angle), d(yaw rate}}
+    \return pair in the form: {d(slip angle), d(yaw rate}}
  */
-std::vector<double> sideslipModel(Vehicle* car,double δ,double β,double r,double Vx, double φ);
-}
+MatrixXd sideslipModel(Vehicle* car,double δ,double β,double r,double Vx, double φ);
+
 /*!
 Steering Low Pass Filter
     \param δfcmd Current steering Angle
@@ -89,4 +89,14 @@ Steering Low Pass Filter
  */
 double steeringLowPassFilter(double δfcmd, double δfcmdPrev,double cutoffFreq,double dt);
 
+/*!
+ Errors obtained from tracking vehicle
+ \param car Vehicle Class Instance
+ \param e1Vals Distance between C.G. of vehicle and center of road
+ \param e2Vals Orientation error w.r.t road
+ \param dt Timestep
+ */
+
+MatrixXd laneErrorSimulation(Vehicle *car,MatrixXd e1Vals,MatrixXd e2Vals,MatrixXd inputSequence, double dt);
+}
 #endif /* Dynamics_hpp */

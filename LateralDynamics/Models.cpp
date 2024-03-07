@@ -7,7 +7,6 @@
 // Use this file for Dynamic Model Functions
 
 #include "Models.hpp"
-#include "HelperFunctions.hpp"
 
 //Environment Parameters
 extern const double g = 9.81;
@@ -41,7 +40,7 @@ MatrixXd Models::bicycleKinematicsStep(Vehicle* car,double V,double ψ,double st
     return finalVar;
 }
 
-void Models::bicycleSlipDynamicsSimulation(Vehicle* car){
+void Models::bicycleSlipDynamicsSimulation(Vehicle* car,MatrixXd inputSequenceSteering,double Vx,double dt,std::string filePath){
 
     double lf = car -> lf;
     double lr = car -> lr;
@@ -50,7 +49,6 @@ void Models::bicycleSlipDynamicsSimulation(Vehicle* car){
     double Cαf = car -> Cαf;
     double Cαr = car ->Cαr;
     double δfmax = car ->δfmax;
-    double dt = 0.04;
     //Calculate Slip Distance
     //double δ = sqrt((δr - δf)*L/lw);
     
@@ -67,20 +65,19 @@ void Models::bicycleSlipDynamicsSimulation(Vehicle* car){
 
     
     SimulateSystem* du = new SimulateSystem();//Create State Space Model for Simulation
-
-    auto inputSequenceVx = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/inputSequenceKinematics.csv",std::vector<std::string> {"x1"}); //Vx
-    auto inputSequenceSteering = du -> openData("/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/testdata/lat_logCSVFile-202312061600.csv",std::vector<std::string>{"steer_fdback_percent"}); //Steering
+    
     MatrixXd inputSequence;inputSequence.resize(4,inputSequenceSteering.cols());
+    
+    //Convert steering percentage to steering values
     for(int i =0; i < inputSequence.cols(); ++i){
         double steerCommandPercent = inputSequenceSteering.col(i)[0]; //Steering Feedback Percent, assuming steering_ratio=1
         double δf = steerCommandPercent/100.0 * δfmax; //Steering Angle
         inputSequence(0,i) = δf;
     }
-    double Vx; //Temporary
 
-    std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/";
     int timeSamples = inputSequence.cols();
     std::cout << "Time Samples for Simulation: "<< timeSamples << std::endl;
+    
     MatrixXd simulatedOutputSequence; simulatedOutputSequence.resize(4, timeSamples); simulatedOutputSequence.setZero();
     MatrixXd simulatedStateSequence;simulatedStateSequence.resize(4, timeSamples);  simulatedStateSequence.setZero();
     
@@ -91,9 +88,6 @@ void Models::bicycleSlipDynamicsSimulation(Vehicle* car){
   
     for (int j = 0; j < timeSamples; j++)
     {
-        
-        Vx = inputSequenceVx.col(j)[0];
-    
         MatrixXd C  {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};// Output Matrix Coefficient, y,Vy,Yaw Angle,Yaw Rate
         MatrixXd x0; x0.resize(4,1);
         x0(0,0) = 0.0; // y
@@ -143,13 +137,8 @@ void Models::bicycleSlipDynamicsSimulation(Vehicle* car){
         }
     }
     //Export Files
-    
-    HelperFunctions::toCsv(inputSequence, "inputSequenceDynamicsONLYFile.csv", FILEPATH);
-    HelperFunctions::toCsv(simulatedStateSequence, "simulatedStateDynamicsONLYSequence.csv", FILEPATH);
-    HelperFunctions::toCsv(simulatedOutputSequence,"simulatedOutputDynamicsONLYSequence.csv",FILEPATH);
- 
-    std::cout << "[+] Bicycle Slip Dynamic Simulation ONLY: " << FILEPATH << std::endl;
-    
+    HelperFunctions::toCsv(simulatedStateSequence, "simulatedStateDynamicsSequence.csv", filePath);
+    HelperFunctions::toCsv(simulatedOutputSequence,"simulatedOutputDynamicsSequence.csv",filePath);
      }
 MatrixXd Models::bicycleSlipDynamicsStep(Vehicle* car,MatrixXd sequence,double steerCommandPercent,double Vx,double φ,double dt){
     double lf = car -> lf;
@@ -176,28 +165,32 @@ MatrixXd Models::bicycleSlipDynamicsStep(Vehicle* car,MatrixXd sequence,double s
     return du;
     
 }
-MatrixXd Models::ackermannModel(Vehicle* car,double steerCommandPercent,double pAck){
+MatrixXd Models::ackermannModel(Vehicle* car,double steerCommandPercent,double curvature,double pAck){
     //input
     //https://www.mathworks.com/help/vdynblks/ref/kinematicsteering.html
     double δfmax = car -> δfmax;
     double γ = 1.0; //Steering Ratio,Assuming 100% steering ratio
     double δf = steerCommandPercent/100.0 * δfmax;
     
+    pAck /= 100.0; //Percentage to Decimal
     double δack = δf/γ;
     
     //params
     double lw = car -> lw;
     double L = car -> L;
     
-    //output
-    double r = L/sin(δf);
+    //output, Left Wheel followed by Right Wheel
+    //double r = L/sin(δf);
+    double r = 1.0/curvature;
     double δi = atan(L/(r-lw/2));
     double δo = δi-pAck*(δi-δack);
 
     MatrixXd finalValues{{δi},{δo}};
+    if(δf > 0.0)
+        std::swap(finalValues(0,0),finalValues(1,0));
     return finalValues;
 }
-MatrixXd Models::pacejkaTireModel(Vehicle* car, double steerCommandPercent,double ψ){
+std::pair<MatrixXd,MatrixXd> Models::pacejkaTireModel(Vehicle* car, MatrixXd steeringAngles,double ψ){
     /*
      Estimates
      Stiffness Factor (B):
@@ -220,32 +213,39 @@ MatrixXd Models::pacejkaTireModel(Vehicle* car, double steerCommandPercent,doubl
      */
     
     //Base Parameters
-    double δfmax = car -> δfmax;
     double lr = car -> lr;
     double lf = car -> lf;
     double L = car -> L;
     double Fz = car -> m * g; //Vertical Load
-    double Fzf = Fz * lr/L; //Vertical Load Front Distribution
-    double Fzr = Fz * lf/L; //Vertical Load Back Distribution
     
-    double δf = steerCommandPercent/100.0 * δfmax; //Steering Angle, assuming 1:1 steering ratio
-    double α = δf - ψ; //Slip Angle
-    
-    //Calculation Parameters
-    double B = 100; //Stiffness Factor
-    double C = 1.5; //Shape Factor
-    double D = 15000; //Peak Value
-    double E = 0.1; //Curvature Factor
-    
-    //Calculation
-    double Fy = D * sin(C * atanl(B * α - E * (B * α - atanl(B * α))));
+  //  double Fzf = Fz * lr/L; //Vertical Load Front Distribution
+   // double Fzr = Fz * lf/L; //Vertical Load Back Distribution
     
     //Return
-    MatrixXd results;results.resize(3,1);results.setZero();
-    results(0,0) = Fy/Fzf;
-    results(1,0) = Fy/Fzr;
-    results(2,0) = α;
-    return results;
+    MatrixXd FyResults;FyResults.resize(steeringAngles.rows(),1);FyResults.setZero();
+    MatrixXd slipAngleResults = FyResults;
+    
+    for(int i =0; i < steeringAngles.rows();++i)
+    {
+        double δ = steeringAngles(i,0);
+        double α = δ - ψ; //Slip Angle
+        
+        //Calculation Parameters
+        double B = 100; //Stiffness Factor
+        double C = 1.5; //Shape Factor
+        double D = 15000; //Peak Value
+        double E = 0.1; //Curvature Factor
+        
+        //Calculation
+        double Fy = D * sin(C * atanl(B * α - E * (B * α - atanl(B * α))));
+        
+        FyResults(i,0) = Fy; //Total Lateral Force/Total Load
+       // results(1,i) = Fy/Fzf; //Total Lateral Force/Total
+       // results(2,i) = Fy/Fzr;
+        slipAngleResults(i,0) = α;
+    }
+
+    return {FyResults,slipAngleResults};
 }
 double steeringLowPassFilter(double δfcmd, double δfcmdPrev,double cutoffFreq,double dt)
 {
@@ -259,7 +259,7 @@ void Models::test(){
     
 }
 
-std::vector<double> Models::sideslipModel(Vehicle* car,double δ,double β,double r,double Vx, double φ){
+MatrixXd Models::sideslipModel(Vehicle* car,double δ,double β,double r,double Vx, double φ){
     //β -> slip angle, r -> dψ ;
     double Cαf= car -> Cαf;
     double Cαr = car -> Cαr;
@@ -271,7 +271,33 @@ std::vector<double> Models::sideslipModel(Vehicle* car,double δ,double β,doubl
     
     double dβ = -r + Cαf/(m*Vx) * (δ - β - lf*r/Vx ) + Cαr/(m*Vx) * (-β + lr*r/Vx) + g*sin(φ)/Vx;
     double dr = lf * Cαf / Iz * (δ - β - lf*r/Vx ) - lr * Cαr /Iz * (-β + lr*r/Vx);
-    return std::vector<double>{dβ,dr};
+    MatrixXd results;results.resize(2,1);results.setZero();
+    results(0,0) = dβ;
+    results(1,0) = dr;
+    return results;
     
 }
 
+MatrixXd Models::laneErrorSimulation(Vehicle *car,MatrixXd e1Vals,MatrixXd e2Vals,MatrixXd inputSequence, double dt){
+    double m = car -> m;
+    
+    SimulateSystem* du = new SimulateSystem();
+    MatrixXd A;A.resize(4,4);A.setZero();
+    MatrixXd B;B.resize(4,3);B.setZero();
+    MatrixXd C;C.resize(4,4);
+    MatrixXd D;D.resize(4,1);D.setZero();
+    MatrixXd x0;x0.resize(4,1);x0.setZero(); //Set Initial Conditions as 0
+    
+    
+    du -> setMatrices(A, B, C, D, x0, inputSequence);
+    du -> printSimulationParams();
+    du -> runSimulation();
+    du -> saveData("laneError_A.csv", "laneError_B.csv", "laneError_C.csv", "laneError_D.csv", "laneError_initial.csv", "laneError_inputSeq.csv", "laneError_simulatedState.csv", "laneError_simulatedOutput.csv");
+    /*
+     e1 -> distance from cg to center of road lane
+     e2 -> Orientation error of vehicle w.r.t road
+     */
+    MatrixXd results;
+    
+    return results;
+}
