@@ -30,7 +30,9 @@ public:
     
     //Operator Overloads
     Polynomial operator+(Polynomial const& b);
+    Polynomial operator-(Polynomial const&b);
     Polynomial operator*(Polynomial const &b);
+    Polynomial operator/(Polynomial const &b);
    
     
 };

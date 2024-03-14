@@ -37,6 +37,8 @@ void Polynomial::printPolynomial(){
     }
     std::cout << "Polynomial: " << res << std::endl;
 }
+
+//Operator Overloads
 Polynomial Polynomial::operator+(Polynomial const &b){
     auto polyA = polyPairs;
     auto polyB = b.polyPairs;
@@ -47,6 +49,28 @@ Polynomial Polynomial::operator+(Polynomial const &b){
         if(polyA[i].second == polyB[j].second) //Same degree
         {
             newPairs.push_back({polyA[i].first + polyB[j].first,polyA[i].second});
+            i++;j++;
+        }
+        else if(polyA[i].second > polyB[j].second)
+            i++;
+        
+        else if(polyB[j].second > polyA[i].second)
+            j++;
+    }
+    Polynomial polyC;
+    polyC.polyPairs = newPairs;
+    return polyC;
+}
+Polynomial Polynomial::operator-(Polynomial const&b){
+    auto polyA = polyPairs;
+    auto polyB = b.polyPairs;
+    std::vector<std::pair<double,int>> newPairs;
+    int i =0,j = 0;
+    while(i < polyA.size() && j < polyB.size())
+    {
+        if(polyA[i].second == polyB[j].second) //Same degree
+        {
+            newPairs.push_back({polyA[i].first - polyB[j].first,polyA[i].second});
             i++;j++;
         }
         else if(polyA[i].second > polyB[j].second)
@@ -100,3 +124,22 @@ Polynomial Polynomial::operator *(Polynomial const &b){
     return C;
 }
 
+//Base on long division
+
+Polynomial Polynomial::operator/(Polynomial const&b){
+    auto polyA = polyPairs;
+    auto polyB = b.polyPairs;
+    std::vector<std::pair<double,int>> newPairs;
+    Polynomial polyC;
+    polyC.polyPairs = newPairs;
+    return polyC;
+}
+
+double Polynomial::polyParser(double s){
+    //Parse out our polynomial
+    double finalVal = 0.0;
+    for(auto &a: polyPairs){
+        finalVal += a.first * std::pow(s,a.second);
+    }
+    return finalVal;
+}
