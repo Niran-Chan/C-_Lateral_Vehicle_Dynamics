@@ -82,6 +82,7 @@ Eigen::MatrixXd HelperFunctions::fromCsv(std::string fileToOpen,std::vector<std:
            matrixRowNumber++; //update the column numbers
        }
        
+    double initialValidElems = 0.0;
        for(auto &header : headers){
            std::string result = headerMap.find(header)!=headerMap.end() ? "yes" : "no";
            std::cout << "Existence of header " << header << " : "<< result  << std::endl;
@@ -89,9 +90,11 @@ Eigen::MatrixXd HelperFunctions::fromCsv(std::string fileToOpen,std::vector<std:
                matrixEntries.push_back(val);
                validElems++;
            }
+           initialValidElems = validElems; //For Debugging if unequal number of cols
        }
-       return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> (matrixEntries.data(),headers.size(),validElems/headers.size());
-    
+    double cols = validElems/headers.size();
+    //MUST BE ROWMAJOR!
+       return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> (matrixEntries.data(),headers.size(),cols);
 }
 
 
