@@ -12,11 +12,14 @@
 #include "ControlBlock.hpp"
 class ControlBlockSystem{
 public:
-    
+    //States of combining blocks
+    enum COMBINE_STATE{
+        ADD_PARALLEL,SUBTRACT_PARALLEL,SERIES
+    };
     ControlBlockSystem();
     
-    void runBlocks(ControlBlock* startBlock,ControlBlock* endBlock,int nSteps);
-    ControlBlock* addBlocks(ControlBlock* A,ControlBlock* B);
+    void runBlocks(ControlBlock startBlock,ControlBlock endBlock,int nSteps);
+    ControlBlock combineBlocks(ControlBlock A,ControlBlock B,COMBINE_STATE);
     
 };
 #endif /* ControlBlockSystem_hpp */
