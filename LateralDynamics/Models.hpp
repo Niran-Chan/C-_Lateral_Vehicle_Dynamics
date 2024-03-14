@@ -21,10 +21,9 @@ namespace Models{
  \param V Velocity vector
  \param ψ Current Yaw Angle
  \param steerCommandPercent Percentage of Steering done
- \param steerRatio Actual Steering done of physical steering wheel
  \return 4x1 Matrix in following format: {dx,dy,dψ,β}
  */
-MatrixXd bicycleKinematicsStep(Vehicle* car,double V,double ψ,double steerCommandPercent,double steerRatio,double dt);
+MatrixXd bicycleKinematicsStep(Vehicle* car,double V,double ψ,double steerCommandPercent,double dt);
 /*!Numerical Kinematics Model of 2 wheeler.
  Sufficient for low speed models
  \param car Pointer to Vehicle Class Instance

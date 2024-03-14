@@ -10,12 +10,11 @@
 
 //Environment Parameters
 extern const double g = 9.81;
+const std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/";
 
-MatrixXd Models::bicycleKinematicsStep(Vehicle* car,double V,double ψ,double steerCommandPercent,double steerRatio,double dt){
+MatrixXd Models::bicycleKinematicsStep(Vehicle* car,double V,double ψ,double steerCommandPercent,double dt){
 
     double δfmax = car -> δfmax; //Max angle of Vehicle constricted by Ackermann
-    double δrmax = car -> δrmax;
-    double lw = car -> lw;
     double L = car -> L;
     double lr = car -> lr;
     double lf = car -> lf;
@@ -29,14 +28,13 @@ MatrixXd Models::bicycleKinematicsStep(Vehicle* car,double V,double ψ,double st
     
     dx = V * cos(ψ + β); //dx, which is Vx
     dy = V * sin(ψ + β); //dy, which is Vy
-    dψ = V/L * cos(β) * (tan(δf) - tan(δr)); //Steering Angle -> Yaw Rate, Kinematic Interpretation
+    dψ = V * cos(β) * tan(δf)/L; //Steering Angle -> Yaw Rate, Kinematic Interpretation
    
     
     finalVar(0,0) = dx;
     finalVar(1,0) = dy;
     finalVar(2,0) = dψ;
     finalVar(3,0) = β;
-
     return finalVar;
 }
 
