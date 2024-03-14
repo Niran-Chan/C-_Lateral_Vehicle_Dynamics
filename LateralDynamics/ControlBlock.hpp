@@ -22,12 +22,13 @@ public:
     //DataType TransferFunction
     
     struct TransferFunction{
-        Polynomial* numPoly;
-        Polynomial* denomPoly;
+        Polynomial numPoly;
+        Polynomial denomPoly;
     } tf; //Transferfunction of type TransferFunction
     
-    ControlBlock* nextBlock; //Linked List Methodology
-    
+    //Linked List Methodology
+    ControlBlock* nextBlock = NULL;
+    ControlBlock* prevBlock = NULL;
     
     
     /*!
@@ -38,14 +39,15 @@ public:
                 Overloaded Constructor. Initialise with Transfer Function
      \param tf Transfer function in s-domain
      */
-    ControlBlock(Polynomial* num,Polynomial* denom);
+    ControlBlock(Polynomial num,Polynomial denom);
     /*!
                 Overloaded Constructor
         \param tf Transfer function in s-domain
         \param nextBlock Another ControlBlock instance as the next block to continue to.
      */
 //Overloaded Constructor
-    ControlBlock(Polynomial* num, Polynomial* denom, ControlBlock* nextBlock);
+    ControlBlock(Polynomial num, Polynomial denom, ControlBlock nextBlock);
+    void setTF(Polynomial newNum,Polynomial newDenom);
 };
 
 

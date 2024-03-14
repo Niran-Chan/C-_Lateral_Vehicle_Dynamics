@@ -5,19 +5,23 @@
 //  Created by Niranjan Gopinath on 14/3/24.
 //
 
-#include "ControlBlock.hpp""
+#include "ControlBlock.hpp"
 
 ControlBlock::ControlBlock(){
     this -> nextBlock = NULL;
 }
-ControlBlock::ControlBlock(Polynomial* num,Polynomial* denom){
+ControlBlock::ControlBlock(Polynomial num,Polynomial denom){
     this -> tf.numPoly = num;
     this -> tf.denomPoly = denom;
     this -> nextBlock = NULL;
 }
-ControlBlock::ControlBlock(Polynomial* num,Polynomial* denom,ControlBlock* nextBlock){
+ControlBlock::ControlBlock(Polynomial num,Polynomial denom,ControlBlock nextBlock){
     this -> tf.numPoly = num;
     this -> tf.denomPoly = denom;
-    this -> nextBlock = nextBlock;
+    this -> nextBlock = &nextBlock;
+}
+void ControlBlock::setTF(Polynomial newNum, Polynomial newDenom){
+    tf.numPoly = newNum;
+    tf.denomPoly = newDenom;
 }
 
