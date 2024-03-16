@@ -12,15 +12,15 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "Eigen/Dense"
 
 class Polynomial{
 public:
     
-    std::vector<std::pair<double,int>> polyPairs;
+    Eigen::ArrayXd polyPairs;
     
     Polynomial(); //Default Constructor
-    Polynomial(std::vector<double> coeffs,int degree);
-    Polynomial(std::vector<std::pair<double,int>> polyPairs);
+    Polynomial(Eigen::ArrayXd coeffs);
     
     
     //Methods

@@ -10,18 +10,7 @@
 Polynomial::Polynomial(){}; //Default Constructor
 
 
-Polynomial::Polynomial(std::vector<double> coeffs,int degree){
-    int j =0;
-    for(int i = degree; i >=0; --i,++j){
-        std::pair<double,int> currPair = {0.0,i};
-        if(j < coeffs.size())
-            currPair.first = coeffs[j];
-        if(currPair.first != 0.0)
-            polyPairs.push_back(currPair);
-    }
-}
-
-Polynomial::Polynomial(std::vector<std::pair<double,int>> polyPairs){
+Polynomial::Polynomial(Eigen::ArrayXd polyPairs){
     this -> polyPairs = polyPairs;
 }
 
@@ -30,116 +19,102 @@ void Polynomial::printPolynomial(){
     bool first = true;
     //Iterate through coefficients, assign them from largest degress
     std::string res = "";
-    for(auto a : polyPairs){
+    
+    for(long long int i = polyPairs.size() - 1;i >= 0;--i){
         plusSign = first ? "" : "+";
-        res += plusSign + std::to_string(a.first) + "s^" + std::to_string(a.second);
+        res += plusSign + " " + std::to_string(polyPairs(polyPairs.size()- 1 - i)) + "s^" + std::to_string(i) + " ";
         first = false;
     }
-    std::cout << "Polynomial: " << res << std::endl;
+    std::cout << res << std::endl;
 }
 
 //Operator Overloads
 Polynomial Polynomial::operator+(Polynomial const &b){
-    auto polyA = polyPairs;
-    auto polyB = b.polyPairs;
-    std::vector<std::pair<double,int>> newPairs;
-    int i =0,j = 0;
-    while(i < polyA.size() && j < polyB.size())
+    auto A = polyPairs;
+    auto B = b.polyPairs;
+    
+    long long int i =A.size() - 1,j = B.size() - 1;
+    
+    if(i>j)
+    {std::swap(A,B);std::swap(i,j);}
+    
+    Eigen::ArrayXd newPairs = B;
+    
+    //We add from the lower degrees to the higher degrees. This means adding from the last index to the first index of the smaller array, a.
+    while(i > -1)
     {
-        if(polyA[i].second == polyB[j].second) //Same degree
-        {
-            newPairs.push_back({polyA[i].first + polyB[j].first,polyA[i].second});
-            i++;j++;
-        }
-        else if(polyA[i].second > polyB[j].second)
-            i++;
         
-        else if(polyB[j].second > polyA[i].second)
-            j++;
+        newPairs(j--) += A(i--);
     }
-    Polynomial polyC;
-    polyC.polyPairs = newPairs;
-    return polyC;
+    Polynomial C (newPairs);
+    return C;
 }
 Polynomial Polynomial::operator-(Polynomial const&b){
-    auto polyA = polyPairs;
-    auto polyB = b.polyPairs;
-    std::vector<std::pair<double,int>> newPairs;
-    int i =0,j = 0;
-    while(i < polyA.size() && j < polyB.size())
+    auto A = polyPairs;
+    auto B = b.polyPairs;
+    if(A.size() == B.size())
+        return Polynomial(A - B);
+    
+    long long int i =A.size() - 1,j = B.size() - 1;
+    long long int z = i;
+    Eigen::ArrayXd newPairs(z+1);newPairs.setZero();
+    
+    
+    if(j > i)
+    {newPairs.resize(j);z = j+1;}
+    
+    while(i > -1 && j > -1)
     {
-        if(polyA[i].second == polyB[j].second) //Same degree
-        {
-            newPairs.push_back({polyA[i].first - polyB[j].first,polyA[i].second});
-            i++;j++;
-        }
-        else if(polyA[i].second > polyB[j].second)
-            i++;
-        
-        else if(polyB[j].second > polyA[i].second)
-            j++;
+        newPairs[z--] = A[i--] - B[j--];
     }
-    Polynomial polyC;
-    polyC.polyPairs = newPairs;
-    return polyC;
+    while(i > -1)
+        newPairs[z--] = A[i--];
+    while(j > -1)
+        newPairs[z--] = B[j--];
+    
+    Polynomial C (newPairs);
+    return C;
 }
 Polynomial Polynomial::operator *(Polynomial const &b){
     //Multiplication affects both coefficients and degrees
-    auto polyPairsA = polyPairs;
-    auto polyPairsB = b.polyPairs;
-    std::vector<std::pair<double,int>> polyPairsC;
+    auto A = polyPairs;
+    auto B = b.polyPairs;
+    if(A.size() == B.size()) //Eigen Operation Valid
+        return Polynomial(A*B);
     
-    for(auto& pairA : polyPairsA){
-        for(auto& pairB : polyPairsB){
-            std::pair<double,int> pairC = {pairA.first * pairB.first,pairA.second + pairB.second};
-            polyPairsC.push_back(pairC);
+  
+    long long int i = A.size() - 1, j = B.size() - 1;
+    if(i > j)
+    {std::swap(A,B);std::swap(i,j);}
+    
+    Eigen::ArrayXd C(j + i + 1);C.setZero();
+ 
+    for(long long int x =0 ; x < j + 1; ++x){
+        for(long long int y = 0; y < i + 1; ++y){
+            C(x + y) += A(y) * B(x);
         }
     }
-    //Some coefficients and powers might have the same degree
-    //Simplify said polynomials
-    std::sort(polyPairsC.begin(),polyPairsC.end(),[](auto &left, auto &right) {
-        return left.second > right.second;
-    });
-    
-    int i =0,j = 1;
-    std::vector<std::pair<double,int>> polyPairsD;
-    while(j < polyPairsC.size()){
-        std::pair<double,int> pairD {polyPairsC[i].first,polyPairsC[i].second};
-        
-        while(polyPairsC[i].second == polyPairsC[j++].second)
-        {
-            pairD.first += polyPairsC[j].first;
-        }
-        
-        i = j;
-        j++;
-        
-        polyPairsD.push_back(pairD);
-    }
-    while(i < polyPairsD.size()){
-        polyPairsD.push_back(polyPairsC[i++]);
-    }
-    
-    Polynomial C (polyPairsD);
-    return C;
+    Polynomial D (C);
+    return D;
 }
 
 //Base on long division
-
+//NOT COMPLETE
+/*
 Polynomial Polynomial::operator/(Polynomial const&b){
-    auto polyA = polyPairs;
-    auto polyB = b.polyPairs;
-    std::vector<std::pair<double,int>> newPairs;
-    Polynomial polyC;
-    polyC.polyPairs = newPairs;
-    return polyC;
+    auto A = polyPairs;
+    auto B = b.polyPairs;
+    Eigen::ArrayXd newPairs;
+    Polynomial C (newPairs);
+    return C;
 }
-
+*/
 double Polynomial::polyParser(double s){
     //Parse out our polynomial
     double finalVal = 0.0;
-    for(auto &a: polyPairs){
-        finalVal += a.first * std::pow(s,a.second);
+    auto A = polyPairs;
+    for(int a =0; a < A.size();++a){
+        finalVal += A(a) * std::pow(s,A.size() - a); // Degree = Size - Index
     }
     return finalVal;
 }
