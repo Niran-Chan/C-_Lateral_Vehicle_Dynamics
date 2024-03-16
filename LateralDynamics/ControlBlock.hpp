@@ -32,22 +32,27 @@ public:
     
     
     /*!
-            Default Constructor. Initialises Empty Instance
+     Default Constructor. Initialises Empty Instance
      */
     ControlBlock();
     /*!
-                Overloaded Constructor. Initialise with Transfer Function
+     Overloaded Constructor. Initialise with Transfer Function
      \param tf Transfer function in s-domain
      */
     ControlBlock(Polynomial num,Polynomial denom);
     /*!
-                Overloaded Constructor
-        \param tf Transfer function in s-domain
-        \param nextBlock Another ControlBlock instance as the next block to continue to.
+     Overloaded Constructor
+     \param tf Transfer function in s-domain
+     \param nextBlock Another ControlBlock instance as the next block to continue to.
      */
-//Overloaded Constructor
+    //Overloaded Constructor
     ControlBlock(Polynomial num, Polynomial denom, ControlBlock nextBlock);
+    
+    //Methods
+    
     void setTF(Polynomial newNum,Polynomial newDenom);
+    void printTF();
+    std::complex<double> evaluateTF(std::complex<double> const& s);
 };
 
 
