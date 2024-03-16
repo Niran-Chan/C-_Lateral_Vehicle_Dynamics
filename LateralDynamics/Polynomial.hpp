@@ -8,24 +8,26 @@
 #ifndef Polynomial_hpp
 #define Polynomial_hpp
 
+
 #include <stdio.h>
 #include <vector>
 #include <string>
 #include <iostream>
 #include "Eigen/Dense"
 
+
 class Polynomial{
 public:
     
-    Eigen::ArrayXd polyPairs;
+    Eigen::ArrayXcd polyPairs;
     
     Polynomial(); //Default Constructor
-    Polynomial(Eigen::ArrayXd coeffs);
+    Polynomial(Eigen::ArrayXcd coeffs);
     
     
     //Methods
     void printPolynomial();
-    double polyParser(double s);
+    std::complex<double> polyParser(std::complex<double> const &s);
     
     
     //Operator Overloads

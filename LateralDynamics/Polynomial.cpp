@@ -10,7 +10,7 @@
 Polynomial::Polynomial(){}; //Default Constructor
 
 
-Polynomial::Polynomial(Eigen::ArrayXd polyPairs){
+Polynomial::Polynomial(Eigen::ArrayXcd polyPairs){
     this -> polyPairs = polyPairs;
 }
 
@@ -22,7 +22,12 @@ void Polynomial::printPolynomial(){
     
     for(long long int i = polyPairs.size() - 1;i >= 0;--i){
         plusSign = first ? "" : "+";
-        res += plusSign + " " + std::to_string(polyPairs(polyPairs.size()- 1 - i)) + "s^" + std::to_string(i) + " ";
+        auto coeff = polyPairs(polyPairs.size()- 1 - i);
+        std::string coeffString = std::to_string(real(coeff));
+        if(imag(coeff) != 0)
+            coeffString += std::to_string(imag(coeff)) + "i";
+        
+        res += plusSign + " " + coeffString + "s^" + std::to_string(i) + " ";
         first = false;
     }
     std::cout << res << std::endl;
@@ -38,7 +43,7 @@ Polynomial Polynomial::operator+(Polynomial const &b){
     if(i>j)
     {std::swap(A,B);std::swap(i,j);}
     
-    Eigen::ArrayXd newPairs = B;
+    Eigen::ArrayXcd newPairs = B;
     
     //We add from the lower degrees to the higher degrees. This means adding from the last index to the first index of the smaller array, a.
     while(i > -1)
@@ -57,7 +62,7 @@ Polynomial Polynomial::operator-(Polynomial const&b){
     
     long long int i =A.size() - 1,j = B.size() - 1;
     long long int z = i;
-    Eigen::ArrayXd newPairs(z+1);newPairs.setZero();
+    Eigen::ArrayXcd newPairs(z+1);newPairs.setZero();
     
     
     if(j > i)
@@ -87,7 +92,7 @@ Polynomial Polynomial::operator *(Polynomial const &b){
     if(i > j)
     {std::swap(A,B);std::swap(i,j);}
     
-    Eigen::ArrayXd C(j + i + 1);C.setZero();
+    Eigen::ArrayXcd C(j + i + 1);C.setZero();
  
     for(long long int x =0 ; x < j + 1; ++x){
         for(long long int y = 0; y < i + 1; ++y){
@@ -109,9 +114,9 @@ Polynomial Polynomial::operator/(Polynomial const&b){
     return C;
 }
 */
-double Polynomial::polyParser(double s){
+std::complex<double> Polynomial::polyParser(std::complex<double> const &s){
     //Parse out our polynomial
-    double finalVal = 0.0;
+    std::complex<double> finalVal = 0.0;
     auto A = polyPairs;
     for(int a =0; a < A.size();++a){
         finalVal += A(a) * std::pow(s,A.size() - a); // Degree = Size - Index
