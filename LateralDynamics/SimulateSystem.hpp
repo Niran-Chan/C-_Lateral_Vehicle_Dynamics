@@ -13,11 +13,13 @@
 #define SimulateSystem_hpp
 
 #include <iostream>
+#include <tuple>
+#include <string>
+#include <fstream>
+#include <vector>
 #include "Eigen/Dense"
-#include<tuple>
-#include<string>
-#include<fstream>
-#include<vector>
+
+#include "StateSpaceBlock.hpp"
  
 using namespace Eigen;
  
@@ -25,7 +27,28 @@ using namespace Eigen;
  
 class SimulateSystem {
 public:
+    // MatrixXd is an Eigen typdef for Matrix<double, Dynamic, Dynamic>
+    MatrixXd A,B,C,D; ///<A and B are State Model Coefficient Matrices, where stateModel= Ax + Bu, where x is state variables and u is Input. C and D are state model coefficient and input coefficient respectively for state model output
+    MatrixXd x0;    ///<Initial value of state variables, x
+    MatrixXd inputSequence; ///<Input Sequence, U, where input can be scalar or a relevant Eigen Matrix
+                            //dimensions: m\times  timeSamples
+    MatrixXd simulatedStateSequence; ///<Instantaneous State Space Model at time t
+    // dimensions: n\times  timeSamples
+    MatrixXd simulatedOutputSequence; ///<Instantaneuous Output Model, where y = Cx + Du, and y is output
+    
+    // dimensions: r\times  timeSamples
+    MatrixXd timeRowVector;           ///<Vector containing time values for each frame
+    
+    //[0,1,2,3,\ldots, timeSamples-1]
      
+    int m; ///<Input Dimension
+    int n; ///<State Dimension
+    int r; ///<Output Dimension
+    int timeSamples; ///<Number of Frames in Simulation
+    
+    //m - input dimension, n- state dimension, r-output dimension, timeSamples- number of time samples
+     
+    
     //CONSTRUCTORS & DESTRUCTORS
     //!Default Constructor
     /*!Sets all the variables to 1x1 dimensional matrices and sets all the variables to zero. This is most ideal if input sequence has yet to be imported.
@@ -35,7 +58,7 @@ public:
     //!Overloaded Constructor
     /*!Assigns all private variables
      */
-    SimulateSystem(MatrixXd Amatrix, MatrixXd Bmatrix, MatrixXd Cmatrix, MatrixXd Dmatrix, MatrixXd initialState, MatrixXd inputSequenceMatrix);
+    SimulateSystem(StateSpaceBlock ssBlk);
     
     //!Default Destructor
     /*!Destroys instance of SimulateSystem*/
@@ -121,27 +144,8 @@ public:
     // the inspiration for creating this function was drawn from here (I did NOT copy and paste the code)
     // https://stackoverflow.com/questions/34247057/how-to-read-csv-file-and-assign-to-eigen-matrix
  
- 
-private:
-    // MatrixXd is an Eigen typdef for Matrix<double, Dynamic, Dynamic>
-    MatrixXd A,B,C,D; ///<A and B are State Model Coefficient Matrices, where stateModel= Ax + Bu, where x is state variables and u is Input. C and D are state model coefficient and input coefficient respectively for state model output
-    MatrixXd x0;    ///<Initial value of state variables, x
-    MatrixXd inputSequence; ///<Input Sequence, U, where input can be scalar or a relevant Eigen Matrix
-                            //dimensions: m\times  timeSamples
-    MatrixXd simulatedStateSequence; ///<Instantaneous State Space Model at time t
-    // dimensions: n\times  timeSamples
-    MatrixXd simulatedOutputSequence; ///<Instantaneuous Output Model, where y = Cx + Du, and y is output
     
-    // dimensions: r\times  timeSamples
-    MatrixXd timeRowVector;           ///<Vector containing time values for each frame
-    
-    //[0,1,2,3,\ldots, timeSamples-1]
-     
-    int m; ///<Input Dimension
-    int n; ///<State Dimension
-    int r; ///<Output Dimension
-    int timeSamples; ///<Number of Frames in Simulation
-    //m - input dimension, n- state dimension, r-output dimension, timeSamples- number of time samples
+    void runStep(StateSpaceBlock ssBlk);
  
 };
 

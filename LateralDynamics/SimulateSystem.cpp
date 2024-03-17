@@ -6,7 +6,7 @@
 //
 
 #include "SimulateSystem.hpp"
-
+#include "StateSpaceBlock.hpp"
 
 const std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDynamics/LateralDynamics/graphs/";
 //Fixed File Path (eventually to relative directories)
@@ -25,9 +25,9 @@ SimulateSystem::SimulateSystem() //Default Constructor
     timeRowVector.resize(1, 1); timeRowVector.setZero(); //Vector contatining frame of iteration
 }
  
-SimulateSystem::SimulateSystem(MatrixXd Amatrix, MatrixXd Bmatrix, MatrixXd Cmatrix,MatrixXd Dmatrix, MatrixXd initialState, MatrixXd inputSequenceMatrix)
+SimulateSystem::SimulateSystem(StateSpaceBlock ssBlk)
 {
-    A = Amatrix; B = Bmatrix; C = Cmatrix; x0 = initialState; inputSequence = inputSequenceMatrix;
+    A = ssBlk.A; B = ssBlk.B; C = ssBlk.C; x0 = ssBlk.x0; inputSequence = ssBlk.inputSequence;
     n = A.rows();
     m = B.cols();
     r = C.rows();
@@ -317,36 +317,6 @@ void SimulateSystem::modelResize(){
  
 }
  
-void SimulateSystem::openFromFile(std::string Afile, std::string Bfile, std::string Cfile,std::string Dfile, std::string x0File, std::string inputSequenceFile)
-{
-    // this function acts as a constructor in some way.
-    // call this function after a default constructor is being called
- 
-    A = openData(Afile);
-    B = openData(Bfile);
-    C = openData(Cfile);
-    D = openData(Dfile);
-    x0= openData(x0File);
-    inputSequence=openData(inputSequenceFile);
- 
-    n = A.rows();
-    m = B.cols();
-    r = C.rows();
-    timeSamples = inputSequence.cols();
- 
-    simulatedOutputSequence.resize(r, timeSamples); simulatedOutputSequence.setZero();// C Rows x Time Samples
-    simulatedStateSequence.resize(n, timeSamples);  simulatedStateSequence.setZero();
-    //A rows x Time Samples
- 
-    timeRowVector.resize(1, timeSamples);
- 
-    for (int i = 0; i < timeSamples; i++)
-    {
-        timeRowVector(0, i) = i + 1;
-    }
- 
-     
-}
  
 void SimulateSystem::runSimulation()
 {
@@ -377,4 +347,9 @@ void SimulateSystem::runSimulation()
         }
          
     }
+}
+
+void SimulateSystem::runStep(StateSpaceBlock ssBlk){
+    ssBlk.state = ssBlk.A * ssBlk.state + ssBlk.B * ssBlk.inputSequence;
+    ssBlk.output = ssBlk.C * ssBlk.state + ssBlk.D * inputSequence;
 }
