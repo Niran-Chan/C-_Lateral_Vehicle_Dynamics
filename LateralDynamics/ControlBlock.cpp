@@ -2,14 +2,12 @@
 //  ControlBlock.cpp
 //  LateralDynamics
 //
-//  Created by Niranjan Gopinath on 14/3/24.
+//  Created by Niranjan Gopinath on 16/3/24.
 //
 
 #include "ControlBlock.hpp"
 
-ControlBlock::ControlBlock(){
-    this -> nextBlock = NULL;
-}
+ControlBlock::ControlBlock(){}; //Default Constructor
 ControlBlock::ControlBlock(Polynomial num,Polynomial denom){
     this -> tf.numPoly = num;
     this -> tf.denomPoly = denom;
@@ -38,4 +36,3 @@ std::complex<double> ControlBlock::evaluateTF(std::complex<double> const& s){
     auto denom = tf.denomPoly.polyParser(s);
     return num/denom;
 }
-

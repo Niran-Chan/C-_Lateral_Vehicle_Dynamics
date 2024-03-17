@@ -9,7 +9,7 @@
 #define ControlBlockSystem_hpp
 
 #include <stdio.h>
-#include "ControlBlock.hpp"
+#include "LTIBlock.hpp"
 class ControlBlockSystem{
 public:
     //States of combining blocks

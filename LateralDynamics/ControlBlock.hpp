@@ -2,39 +2,36 @@
 //  ControlBlock.hpp
 //  LateralDynamics
 //
-//  Created by Niranjan Gopinath on 14/3/24.
+//  Created by Niranjan Gopinath on 16/3/24.
 //
 
 #ifndef ControlBlock_hpp
 #define ControlBlock_hpp
 
 #include <stdio.h>
-#include <string>
-#include <unordered_map>
-#include <stack>
-#include <fstream>
-#include <iostream>
 #include "Polynomial.hpp"
 
 class ControlBlock{
-public:
-    
     //DataType TransferFunction
-    
-    struct TransferFunction{
-        Polynomial numPoly;
-        Polynomial denomPoly;
-    } tf; //Transferfunction of type TransferFunction
+public: //Change later to protected for derived classes
     
     //Linked List Methodology
     ControlBlock* nextBlock = NULL;
     ControlBlock* prevBlock = NULL;
     
     
+    struct TransferFunction{
+        Polynomial numPoly;
+        Polynomial denomPoly;
+    } tf; //Transferfunction of type TransferFunction
+    
+    
     /*!
      Default Constructor. Initialises Empty Instance
      */
     ControlBlock();
+
+
     /*!
      Overloaded Constructor. Initialise with Transfer Function
      \param tf Transfer function in s-domain
@@ -54,6 +51,5 @@ public:
     void printTF();
     std::complex<double> evaluateTF(std::complex<double> const& s);
 };
-
 
 #endif /* ControlBlock_hpp */
