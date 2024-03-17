@@ -50,28 +50,42 @@ std::pair<LPVBlock::GridPoint,LPVBlock::GridPoint> LPVBlock::getGridPoint(double
     
     bool found = false;
     std::pair<GridPoint,GridPoint> res;
-    while(!found){
+    while(!found || high >= low + 1){
         int mid = (high+low)/2;
-        if(grid(mid,0).var1 < target)
-            low = mid;
-        else if (grid(mid,0).var1 == target)
+   
+        if (grid(mid,0).var1 == target)
         {
             return {grid(mid,0),grid(mid,0)};
         }
-            
+        else if(grid(mid,0).var1 < target)
+            low = mid;
+        else if (grid(mid,0).var1 > target)
+            high = mid-1;
+        else
+            low++;
+        
     }
-    
+    res = {grid(low,0),grid(high,0)};
     return res;
 }
 Eigen::MatrixXd LPVBlock::getLinearEstimation(double x){
     //given value of one variable, i can now estimate values of other variables
     //Find closest grid point on grid
     auto closestGridPoints = getGridPoint(x);
-    MatrixXd res;res.resize(2,1);
-    if(&closestGridPoints.first == &closestGridPoints.second)
+    auto p1 = closestGridPoints.first;
+    auto p2 = closestGridPoints.second;
+    
+    MatrixXd res;res.resize(3,1);
+    if(p1.var1 == p2.var1) //Same grid point
     {
-        res(0,0) = closestGridPoints.first.var1;
-        res(1,0) = closestGridPoints.second.var2;
+        res = closestGridPoints.first.output;
+    }
+    else{
+        //Conduct Linear Approximation Operation
+   
+        auto gradient = (p2.output - p1.output) * (p2.output - p2.output).inverse();
+        res = p1.output + gradient * (x - p1.var1);
+        
     }
     return res;
 }
