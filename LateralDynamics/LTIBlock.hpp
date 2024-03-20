@@ -20,9 +20,7 @@
 class LTIBlock : public ControlBlock {
 public:
     //Inherit Constructors
-    LTIBlock();
-    LTIBlock(Polynomial num,Polynomial denom);
-    LTIBlock(Polynomial num,Polynomial denom,ControlBlock nextBlock);
+    using ControlBlock::ControlBlock;
     
     //Inherit Control Block Methods
 };
