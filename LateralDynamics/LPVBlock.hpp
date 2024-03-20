@@ -9,29 +9,31 @@
 #define LPVBlock_hpp
 
 #include <stdio.h>
-#include <unordered_map>
+#include <map>
 
 #include "ControlBlock.hpp"
 #include "StateSpaceBlock.hpp"
 #include "SimulateSystem.hpp"
 #include "Eigen/Dense"
+#include "SharedStructs.h"
+#include "KDTree.hpp"
 
 class LPVBlock : public ControlBlock{
+
+public:
     //Grid based LPV Models
-    typedef struct GridPoint{
-        double var1;
-        double var2;
-        Eigen::MatrixXd output;
-    }
-    GridPoint;
     
-    Eigen::Matrix<GridPoint, Dynamic,Dynamic> grid;
+    //std::map<double,GridPoint> grid;
+    KDTree grid; //KD Binary Space Partition Tree for efficient neighbour search, Instance of Tree
+    Node* root;
     
     //Custom Constructor for Block
+    LPVBlock(); //Empty default constructor
     LPVBlock(StateSpaceBlock ss,Eigen::MatrixXd ranges);
+    void addModel(std::vector<double> points,StateSpaceBlock ss); //Populate Current Grid
     void printGrid();
     
-    std::pair<LPVBlock::GridPoint,LPVBlock::GridPoint> getGridPoint(double x);
-    Eigen::MatrixXd getLinearEstimation(double x);
+    std::pair<GridPoint,GridPoint> getGridPoint(std::vector<double> targetPoints);
+    StateSpaceBlock getLinearEstimation(std::vector<double> targetPoints);
 };
 #endif /* LPVBlock_hpp */
