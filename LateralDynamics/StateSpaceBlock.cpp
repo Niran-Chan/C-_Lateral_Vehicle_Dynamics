@@ -24,3 +24,35 @@ StateSpaceBlock::StateSpaceBlock(Eigen::MatrixXd A_,Eigen::MatrixXd B_,Eigen::Ma
     inputSequence = inputSequence_;
     state = x0;
 }
+StateSpaceBlock StateSpaceBlock::operator -(StateSpaceBlock const &b){
+    StateSpaceBlock C_;
+    C_.A = A - b.A;
+    C_.B = B - b.B;
+    C_.C = C - b.C;
+    C_.D = D - b.D;
+    return C_;
+}
+StateSpaceBlock StateSpaceBlock::operator +(StateSpaceBlock const &b){
+    StateSpaceBlock C_;
+    C_.A = A + b.A;
+    C_.B = B + b.B;
+    C_.C = C + b.C;
+    C_.D = D + b.D;
+    return C_;
+}
+StateSpaceBlock StateSpaceBlock::operator *(StateSpaceBlock const &b){
+    StateSpaceBlock C_;
+    C_.A = A * b.A;
+    C_.B = B * b.B;
+    C_.C = C * b.C;
+    C_.D = D * b.D;
+    return C_;
+}
+StateSpaceBlock StateSpaceBlock::operator *(double const b){
+    StateSpaceBlock C_;
+    C_.A = A * b;
+    C_.B = B * b;
+    C_.C = C * b;
+    C_.D = D * b;
+    return C_;
+}

@@ -28,6 +28,11 @@ public:
     StateSpaceBlock(); //Default Constructor
     StateSpaceBlock(Eigen::MatrixXd A_,Eigen::MatrixXd B_,Eigen::MatrixXd C_,Eigen::MatrixXd D_,Eigen::MatrixXd x0_,Eigen::MatrixXd inputSequence_);
     
+    //Operator Overloads
+    StateSpaceBlock operator -(StateSpaceBlock const &b);
+    StateSpaceBlock operator +(StateSpaceBlock const &b);
+    StateSpaceBlock operator *(StateSpaceBlock const &b);
+    StateSpaceBlock operator *(double const b);
 };
 
 #endif /* StateSpaceBlock_hpp */
