@@ -74,7 +74,7 @@ public:
     */
     std::tuple<MatrixXd, MatrixXd, MatrixXd> getStateOuputTime();
     
-    /*!Setter values of private variables in SimulatedSystem Class
+    /*!Setter values of variables in SimulatedSystem Class
         \param A Eigen Matrix of State Variables Coefficient
         \param B Eigen Matrix of Input Coefficient
         \param C Eigen Matrix of Output State Model Coefficient
@@ -83,6 +83,12 @@ public:
      
      */
     void setMatrices(MatrixXd& A,MatrixXd& B,MatrixXd& C, MatrixXd& D,MatrixXd& x0,MatrixXd& inputSequence);
+    
+    /*!Setter values of  variables in SimulatedSystem Class
+        \param ss StateSpaceBlock object is passed through instead. NR implies that there is NO RESIZING of simulation parameters, and this function is primarily for LPV model implementations
+     
+     */
+    void setMatricesNR(StateSpaceBlock ss);
     ///<Setter for private variables A, B, C, D,x0, InputSequence and Time Samples. Time Samples is generated from number of columns in inputSequence.
     
     /*!Get values of private variables in SimulatedSystem Class
@@ -145,8 +151,15 @@ public:
     // https://stackoverflow.com/questions/34247057/how-to-read-csv-file-and-assign-to-eigen-matrix
  
     
-    void runStep(StateSpaceBlock ssBlk);
- 
+    /*!
+     Run Simulation from Current Step.
+     */
+    void runStep();
+    /*!
+        Set Simulation time back to 0.
+     */
+    void resetSimulationTime();
+    
 };
 
 #endif /* SimulateSystem_hpp */

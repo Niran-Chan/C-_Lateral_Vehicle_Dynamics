@@ -12,6 +12,8 @@ const std::string FILEPATH = "/Users/niran/Documents/Y4S1/ME4101A(FYP)/LateralDy
 //Fixed File Path (eventually to relative directories)
 const IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
+double currStep = 0;
+
 SimulateSystem::SimulateSystem() //Default Constructor
 {
     m = 0; n = 0; r = 0;
@@ -75,6 +77,19 @@ void SimulateSystem::setMatrices(MatrixXd& A,MatrixXd& B,MatrixXd& C,MatrixXd& D
     }
     std::cout << "[~] Time Samples Set: " << inputSequence.cols() << std::endl;
     std::cout << "[+] Simulation Params Set!" << std::endl;
+}
+void SimulateSystem::setMatricesNR(StateSpaceBlock ss){
+
+        this -> A = A;
+        this -> B = B;
+        this -> C = C;
+        this -> D = D;
+        this -> x0 = x0;
+        this -> inputSequence = inputSequence;
+        this -> n = A.rows();
+        this -> m = B.cols();
+        this -> r = C.rows();
+    
 }
 std::vector<MatrixXd> SimulateSystem::getMatrices(){
     //Private Class Getter
@@ -317,10 +332,13 @@ void SimulateSystem::modelResize(){
  
 }
  
- 
+void SimulateSystem::resetSimulationTime(){
+    //Set Global Curr Time Variable to 0
+    currStep = 0;
+}
 void SimulateSystem::runSimulation()
 {
-    for (int j = 0; j < timeSamples; j++)
+    for (int j = currStep; j < timeSamples; j++)
     {
         if (j == 0)
         {
@@ -329,27 +347,18 @@ void SimulateSystem::runSimulation()
             simulatedStateSequence.col(j) = x0; //Equate current, there is an assertion error here on size
             simulatedOutputSequence.col(j) = C * x0 ;
             //D * inputSequence; //Time Invariant system
+            currStep++;
             
         }
         else
-        {
-            simulatedStateSequence.col(j) = A * simulatedStateSequence.col(j - 1) + B * inputSequence.col(j - 1);
-           /*
-            std::cout << std::string(35,'-') << std::endl;
-            std::cout <<"Matrix D\n" << D << std::endl;
-            std::cout << "Input sequence at Col " << j << "\n";
-            std::cout << inputSequence.col(j) << std::endl;
-            std::cout << std::string(35,'-') << std::endl;
-           */
-            simulatedOutputSequence.col(j) = C * simulatedStateSequence.col(j) + D * inputSequence.col(j) ;
-            //Assertion Error: D * inputSequence.col(j);
-            
-        }
+            runStep();
+
          
     }
 }
 
-void SimulateSystem::runStep(StateSpaceBlock ssBlk){
-    ssBlk.state = ssBlk.A * ssBlk.state + ssBlk.B * ssBlk.inputSequence;
-    ssBlk.output = ssBlk.C * ssBlk.state + ssBlk.D * inputSequence;
+void SimulateSystem::runStep(){
+    simulatedStateSequence.col(currStep) = A * simulatedStateSequence.col(currStep - 1) + B * inputSequence.col(currStep - 1);
+    simulatedOutputSequence.col(currStep) = C * simulatedStateSequence.col(currStep) + D * inputSequence.col(currStep);
+    currStep++;
 }
