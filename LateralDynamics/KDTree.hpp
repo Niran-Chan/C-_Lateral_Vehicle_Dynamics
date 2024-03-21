@@ -11,7 +11,7 @@
 #include <iostream>
 #include <vector>
 #include "SharedStructs.h"
-
+#include <queue>
 
 // A structure to represent node of kd tree
 class KDTree{

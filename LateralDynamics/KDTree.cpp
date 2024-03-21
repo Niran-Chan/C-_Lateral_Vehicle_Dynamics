@@ -27,7 +27,7 @@ Node* KDTree::newNode(GridPoint gridpnt)
 
 Node* KDTree::insertRec(Node *root, GridPoint gridpnt, long long int depth)
 {
-    if (root == NULL)
+    if (root == NULL || root -> point.size() == 0)
        return newNode(gridpnt);
  
     // Calculate current dimension (cd) of comparison
@@ -35,6 +35,7 @@ Node* KDTree::insertRec(Node *root, GridPoint gridpnt, long long int depth)
  
     // Compare the new point with root on current dimension 'cd'
     // and decide the left or right subtree
+
     if (gridpnt.points[cd] < (root->point[cd]))
         root->left  = insertRec(root->left, gridpnt, depth + 1);
     else
@@ -123,13 +124,25 @@ Node* KDTree::findNeighbour(Node* root,std::vector<double> targetPoints){
     return findNeighbourRec(root,targetPoints,0);
 }
 Node* KDTree::printTree(Node* root){
-    if(root ==NULL)
-        return root;
-    std::cout <<"x: " <<root -> point[0] << std::endl;
-    std::cout << "/" << std::endl;
-    printTree(root -> left);
-    std::cout << "\\" << std::endl;
-    printTree(root -> right);
+    std::queue<Node*> q;
+    q.push(root);
+    int depth =0 ;
+    //BFS
+    while(!q.empty()){
+        auto currNode = q.front();
+        q.pop();
+        std::cout <<"x: " <<currNode -> point[0] << ",";
+        if(q.empty()) //reached end of current Depth
+        {std::cout << "\tDepth: " << depth << "\n|\n";
+            depth++;
+        }
+        
+        if(currNode -> left)
+            q.push(currNode -> left);
+        if(currNode -> right)
+            q.push(currNode -> right);
+        
+    }
     return root;
     
 }
