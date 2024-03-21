@@ -57,10 +57,20 @@ std::pair<GridPoint,GridPoint> LPVBlock::getGridPoint(std::vector<double> target
      */
     
     //Traverse grid to find nearest neighbour
+
+    GridPoint gridempty;
+
     Node* nd = grid.findNeighbour(root, targetPoints);
-    
-    std::pair<GridPoint,GridPoint> res;
-    return res;
+    if(nd == NULL || !nd -> left && !nd -> right)
+        return {gridempty,gridempty};
+    if(!(nd -> left) || !(nd -> right)) //one of the point on left or right is NULL
+    {
+        if(!nd -> left)
+            return {nd -> right -> gridpnt,nd -> right -> gridpnt};
+        if(!nd -> right)
+            return {nd -> left -> gridpnt,nd -> left -> gridpnt};
+    }
+    return {nd -> left -> gridpnt,nd -> right -> gridpnt};
     }
 StateSpaceBlock LPVBlock::getLinearEstimation(std::vector<double> targetPoints){
     //given value of one variable, i can now estimate values of other variables
@@ -70,14 +80,18 @@ StateSpaceBlock LPVBlock::getLinearEstimation(std::vector<double> targetPoints){
     auto p2 = closestGridPoints.second;
     
     StateSpaceBlock res;
-    if(p1.var1 == p2.var1) //Same grid point
+    if(p1.points.size() == 0 && p2.points.size() == 0){
+        std::cout << "No linear estimation performed as out of range" << std::endl;
+        return res;
+    }
+    if(p1.points == p2.points) //Same grid point
     {
         res = closestGridPoints.first.ss;
     }
     else{
         //Conduct Linear Approximation Operation (1D)
-        auto gradient = (p2.ss - p1.ss) * (1.0/(p2.var1 - p1.var1));
-        res = p1.ss + (gradient * (targetPoints[0] - p1.var1));
+        auto gradient = (p2.ss - p1.ss) * (1.0/(p2.points[0] - p1.points[0]));
+        res = p1.ss + (gradient * (targetPoints[0] - p1.points[0]));
     }
     return res;
 }
@@ -99,23 +113,3 @@ void LPVBlock::addModel(std::vector<double> points,StateSpaceBlock ss){
     //grid[x] = gridpnt; //Assign matrix location with grid point
     root = grid.insert(root,gridpnt);
 }
-
-/*
- //Test program for KD Tree
- struct Node *root = NULL;
- std::vector<double> points = {{3, 6}, {17, 15}, {13, 15}, {6, 12},
-                    {9, 1}, {2, 7}, {10, 19}};
-
- int n = sizeof(points)/sizeof(points[0]);
-
- for (int i=0; i<n; i++)
-    root = insert(root, points[i]);
-
- std::vector<double> p1 = {10, 19};
- (search(root, p1))? std::cout << "Found\n": std::cout << "Not Found\n";
-
- std::vector<double> p2 = {12, 19};
- (search(root, p2))? std::cout << "Found\n": std::cout << "Not Found\n";
-
- return 0;
- */
