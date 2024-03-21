@@ -339,26 +339,19 @@ void SimulateSystem::resetSimulationTime(){
 void SimulateSystem::runSimulation()
 {
     for (int j = currStep; j < timeSamples; j++)
-    {
-        if (j == 0)
-        {
-            //x0.col(j) can work if testing various different initial conditions
-            
-            simulatedStateSequence.col(j) = x0; //Equate current, there is an assertion error here on size
-            simulatedOutputSequence.col(j) = C * x0 ;
-            //D * inputSequence; //Time Invariant system
-            currStep++;
-            
-        }
-        else
-            runStep();
-
-         
-    }
+        runStep();
 }
 
 void SimulateSystem::runStep(){
-    simulatedStateSequence.col(currStep) = A * simulatedStateSequence.col(currStep - 1) + B * inputSequence.col(currStep - 1);
-    simulatedOutputSequence.col(currStep) = C * simulatedStateSequence.col(currStep) + D * inputSequence.col(currStep);
-    currStep++;
+    if(currStep == 0)
+    {
+        simulatedStateSequence.col(currStep) = x0;
+        simulatedOutputSequence.col(currStep) = C * x0 ;
+        currStep++;
+    }
+    else{
+        simulatedStateSequence.col(currStep) = A * simulatedStateSequence.col(currStep - 1) + B * inputSequence.col(currStep - 1);
+        simulatedOutputSequence.col(currStep) = C * simulatedStateSequence.col(currStep) + D * inputSequence.col(currStep);
+        currStep++;
+    }
 }
