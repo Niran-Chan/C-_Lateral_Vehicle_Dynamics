@@ -38,7 +38,7 @@ MatrixXd Models::bicycleKinematicsStep(Vehicle* car,double V,double ψ,double st
     return finalVar;
 }
 
-void Models::bicycleSlipDynamicsSimulation(Vehicle* car,MatrixXd inputSequenceSteering,double Vx,double dt,std::string filePath){
+void Models::bicycleSlipDynamicsSimulation(Vehicle* car,MatrixXd inputSequence,double Vx,double dt,std::string filePath){
 
     double lf = car -> lf;
     double lr = car -> lr;
@@ -47,6 +47,67 @@ void Models::bicycleSlipDynamicsSimulation(Vehicle* car,MatrixXd inputSequenceSt
     double Cαf = car -> Cαf;
     double Cαr = car ->Cαr;
     double δfmax = car ->δfmax;
+    
+    
+    
+    MatrixXd inputSteering;inputSteering.resize(1,inputSequence.cols());
+    
+    //Convert steering percentage to steering values
+    for(int i =0; i < inputSequence.cols(); ++i){
+        double steerCommandPercent = inputSequence(0,i); //Steering Command Percent, assuming steering_ratio=1
+        double δf = steerCommandPercent/100.0 * δfmax; //Steering Angle
+        inputSteering(0,i) = δf;
+    }
+    
+    
+    LPVBlock slipLPV;
+    
+    //Populate LPV Model
+    double Vx_ = 0.0,VxEnd = 100.0,VxInc = 1.0;
+    std::cout << "Populating LPV" << std::endl;
+    
+    //Set Simulation Parameters
+    SimulateSystem du;
+    
+    while(Vx_ <= VxEnd){
+        double A1 = -2*(Cαf + Cαr);  //Include coefficient 2 if we are including more wheels
+        double A2= -2*(Cαf*lf - Cαr*lr);
+        double A3 = -2*(Cαf*lf*lf + Cαr*lr*lr);
+        
+        MatrixXd A {{0,1,0,0},{0,A1/(m*Vx_),0,-Vx_ - A2/(m*Vx_)},{0,0,0,1},{0,A2/(Iz*Vx_),0,A3/(Iz*Vx_)}};
+        MatrixXd B {{0},{2*Cαf/m},{0},{2*lf*Cαf/m}};
+        
+        MatrixXd C  {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};// Output Matrix Coefficient, y,Vy,Yaw Angle,Yaw Rate
+        MatrixXd D;D.resize(4,1);D.setZero();
+        MatrixXd x0; x0.resize(4,1);
+            x0(0,0) = 0.0; // y
+            x0(1,0) = 0.0; // Vy
+            x0(2,0) = 0.0; // Yaw Angle
+            x0(3,0) = 0.0; // Yaw Rate
+        StateSpaceBlock slipModel(A, B, C, D, x0, inputSteering);
+        slipLPV.addModel(std::vector<double> {Vx_},slipModel);
+        if(Vx_ == 1.0)
+            du.setMatrices(A, B, C, D, x0, inputSteering);
+        Vx_ += VxInc;
+    }
+    
+//    slipLPV.printGrid();
+    std::cout << "Running Through Simulation" << std::endl;
+    //Run through simulation
+
+
+
+    for(int i =0; i < inputSequence.cols();++i){
+        double V = inputSequence(3,i);
+        double yawAngle = inputSequence(2,i);
+        double steerCommandPercent = inputSequence(0,i);
+        double Vx = Models::bicycleKinematicsStep(car, V, yawAngle, steerCommandPercent, dt)(0,0);
+        
+        StateSpaceBlock estSS = slipLPV.getLinearEstimation(std::vector<double>{Vx});
+
+        du.setMatricesNR(estSS);
+        du.runStep();
+    }
     //Calculate Slip Distance
     //double δ = sqrt((δr - δf)*L/lw);
     
@@ -60,83 +121,10 @@ void Models::bicycleSlipDynamicsSimulation(Vehicle* car,MatrixXd inputSequenceSt
      du = Au(t) + Bi(t), where A and B are the linear combinations of current state with input respectively
      State space sequence model: d/dt {y,y',ψ,ψ',vx,vx^-1}
     */
-
     
-    SimulateSystem* du = new SimulateSystem();//Create State Space Model for Simulation
     
-    MatrixXd inputSequence;inputSequence.resize(4,inputSequenceSteering.cols());
+    du.saveData("slipA.csv", "slipB.csv", "slipC.csv", "slipD.csv", "slipx0.csv", "slipInputSeq.csv", "slipSimStateSeq.csv", "slipSimOutputSeq.csv");
     
-    //Convert steering percentage to steering values
-    for(int i =0; i < inputSequence.cols(); ++i){
-        double steerCommandPercent = inputSequenceSteering.col(i)[0]; //Steering Feedback Percent, assuming steering_ratio=1
-        double δf = steerCommandPercent/100.0 * δfmax; //Steering Angle
-        inputSequence(0,i) = δf;
-    }
-
-    int timeSamples = inputSequence.cols();
-    std::cout << "Time Samples for Simulation: "<< timeSamples << std::endl;
-    
-    MatrixXd simulatedOutputSequence; simulatedOutputSequence.resize(4, timeSamples); simulatedOutputSequence.setZero();
-    MatrixXd simulatedStateSequence;simulatedStateSequence.resize(4, timeSamples);  simulatedStateSequence.setZero();
-    
-    double A1 = -2*(Cαf + Cαr);  //Include coefficient 2 if we are including more wheels
-    double A2= -2*(Cαf*lf - Cαr*lr);
-    double A3 = -2*(Cαf*lf*lf + Cαr*lr*lr);
-    
-  
-    for (int j = 0; j < timeSamples; j++)
-    {
-        MatrixXd C  {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};// Output Matrix Coefficient, y,Vy,Yaw Angle,Yaw Rate
-        MatrixXd x0; x0.resize(4,1);
-        x0(0,0) = 0.0; // y
-        x0(1,0) = 0.0; // Vy
-        x0(2,0) = 0.0; // Yaw Angle
-        x0(3,0) = 0.0; // Yaw Rate
-        
-    
-        if (j == 0)
-        {
-            
-            simulatedStateSequence.col(j) = x0; //Equate current, there is an assertion error here on size
-            simulatedOutputSequence.col(j) = C * x0 ;
-            
-        }
-        else
-        {
-   
-            double δf = inputSequence.col(j)[0];
-            
-            double d2y = simulatedStateSequence.col(j-1)[1]*A1/(m * Vx) + simulatedStateSequence.col(j-1)[3]*(-Vx + A2/(m*Vx)) + δf * 2*Cαf/m ;
-            double dy = simulatedStateSequence.col(j-1)[1];
-            double d2ψ = simulatedStateSequence.col(j-1)[1] * A2/(Iz*Vx) + (A3/(Iz*Vx))*simulatedStateSequence.col(j-1)[3] + 2*lf*Cαf*δf/Iz ;
-            double dψ = simulatedStateSequence.col(j-1)[3];
-     
-            
-            MatrixXd changedVar {{dy*dt + simulatedStateSequence.col(j-1)[0]},{d2y*dt + simulatedStateSequence.col(j-1)[1]},{dψ*dt + simulatedStateSequence.col(j-1)[2]},{d2ψ*dt + simulatedStateSequence.col(j-1)[3]}};
-   
-            simulatedStateSequence.col(j) = changedVar;
-            if(j < 50)
-            {
-                std::cout << "δf: " <<  δf << "\tVx:" << Vx << "\t"  << std::endl;;
-                std::cout << "y': " << dy << std::endl;
-                std::cout << "y'': " << d2y << std::endl;
-                std::cout << "dψ: " << dψ << std::endl;
-                std::cout << "d2ψ: " << d2ψ << std::endl;
-                std::cout << std::string(20,'-') << std::endl;
-                
-            }
-            
-            simulatedOutputSequence.col(j) = C * simulatedStateSequence.col(j);
-            
-            //simulatedStateSequence.col(j) = simulatedStateSequence.col(j-1) + dt * (A * simulatedStateSequence.col(j - 1) + B * inputSequence.col(j - 1));
-            //simulatedOutputSequence.col(j) = C * simulatedStateSequence.col(j);
-            
-            
-        }
-    }
-    //Export Files
-    HelperFunctions::toCsv(simulatedStateSequence, "simulatedStateDynamicsSequence.csv", filePath);
-    HelperFunctions::toCsv(simulatedOutputSequence,"simulatedOutputDynamicsSequence.csv",filePath);
      }
 MatrixXd Models::bicycleSlipDynamicsStep(Vehicle* car,MatrixXd sequence,double steerCommandPercent,double Vx,double φ,double dt){
     double lf = car -> lf;

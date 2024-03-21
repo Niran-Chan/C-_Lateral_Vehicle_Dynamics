@@ -13,6 +13,8 @@
 #include "Vehicle.hpp"
 #include "Eigen/Dense"
 #include "HelperFunctions.hpp"
+#include "StateSpaceBlock.hpp"
+#include "LPVBlock.hpp"
 
 namespace Models{
 /*!Analytic Kinematics Model of 2 wheeler.
